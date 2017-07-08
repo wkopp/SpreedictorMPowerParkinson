@@ -11,3 +11,14 @@ the directory where the dataset should be stored. For instance,
 on Linux use 
 
 `export PARKINSON_DREAM_DATA=/path/to/data/`
+
+## Accessing the dataset through synapseclient
+
+
+```
+import synapseclient
+# If you have your config file set up you can run:
+syn = synapseclient.login()
+# Otherwise, pass in your username and password:
+syn = synapseclient.login(email='me@example.com', password='secret', rememberMe=True)
+```
