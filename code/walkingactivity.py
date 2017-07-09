@@ -1,10 +1,10 @@
+import synapseclient
 import itertools
 import pandas as pd
 import shutil
 import numpy as np
 import joblib
 import os
-from downloadable import Downloadable
 
 datadir = os.getenv('PARKINSON_DREAM_DATA')
 
@@ -18,7 +18,7 @@ class WalkingActivity(object):
 
         if not os.path.exists(self.downloadpath) or reload_ or \
             not os.path.exists(self.cachepath):
-            shutil.rmtree(self.downloadpath)
+            shutil.rmtree(self.downloadpath, ignore_errors = True)
             self.download()
         
         self.load()
@@ -48,21 +48,25 @@ class WalkingActivity(object):
         syn.login()
 
         results = syn.tableQuery('select * from {}'.format(self.synapselocation))
-    
 
         df = results.asDataFrame()
 
         df[["createdOn"]] = df[["createdOn"]].apply(pd.to_datetime)
         df.fillna(value=-1, inplace=True)
         df[df.columns[5:-1]] = df[df.columns[5:-1]].astype("int64")
+
+        filemap = {}
     
-        json_files = syn.downloadTableColumns(results, df.columns[5:-1])
+        for col in df.columns[5:-1]:
+            print("Downloading {}".format(col))
+            json_files = syn.downloadTableColumns(results, col)
 
-        for fileid in file_map:
-            shutil.move(file_map[fileid], self.downloadpath + \
-                    file_map[fileid].split("/")[-1])
-            json_files[fileid] = self.downloadpath + \
-                    file_map[fileid].split("/")[-1]
+            for fileid in json_files:
+                shutil.move(json_files[fileid], self.downloadpath + \
+                        json_files[fileid].split("/")[-1])
+                json_files[fileid] = self.downloadpath + \
+                        json_files[fileid].split("/")[-1]
+            filemap.update(json_files)
 
-        joblib.dump((df, file_map), self.cachepath)
+        joblib.dump((df, filemap), self.cachepath)
     
