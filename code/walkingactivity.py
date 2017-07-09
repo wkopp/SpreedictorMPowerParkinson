@@ -9,17 +9,21 @@ import os
 datadir = os.getenv('PARKINSON_DREAM_DATA')
 
 class WalkingActivity(object):
-    def __init__(self, reload_ = False):
+    def __init__(self, limit = None, reload_ = False):
         
         self.downloadpath = datadir + "download/"
-        self.cachepath =  self.downloadpath + "json_file_map.pkl"
+        if limit:
+            self.cachepath =  self.downloadpath + \
+                    "json_file_map_{:d}.pkl".format(limit)
+        else:
+            self.cachepath =  self.downloadpath + "json_file_map.pkl"
         
         self.synapselocation = 'syn10146553'
 
         if not os.path.exists(self.downloadpath) or reload_ or \
             not os.path.exists(self.cachepath):
-            shutil.rmtree(self.downloadpath, ignore_errors = True)
-            self.download()
+            #shutil.rmtree(self.downloadpath, ignore_errors = True)
+            self.download(limit)
         
         self.load()
         
@@ -40,14 +44,17 @@ class WalkingActivity(object):
         '''
         return self.file_map
 
-    def download(self):
+    def download(self, limit):
 
         os.mkdir(self.downloadpath)
         syn = synapseclient.Synapse()
 
         syn.login()
 
-        results = syn.tableQuery('select * from {}'.format(self.synapselocation))
+        selectstr = 'select * from {}'.format(self.synapselocation)
+        if limit:
+            selectstr += " limit {:d}".format(limit)
+        results = syn.tableQuery(selectstr)
 
         df = results.asDataFrame()
 
