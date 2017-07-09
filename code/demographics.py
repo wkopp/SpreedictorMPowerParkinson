@@ -16,7 +16,7 @@ class Demographics():
         
         if not os.path.exists(self.downloadpath) or reload_ or \
             not os.path.exists(self.cachepath):
-            shutil.rmtree(self.downloadpath)
+            shutil.rmtree(self.downloadpath, ignore_errors = True)
             self.download()
         
         self.load()
