@@ -1,9 +1,6 @@
 import synapseclient
-import itertools
 import pandas as pd
-import shutil
 import numpy as np
-import joblib
 import os
 
 datadir = os.getenv('PARKINSON_DREAM_DATA')
@@ -55,4 +52,5 @@ class WalkingActivity(object):
 
         self.commondescr = df
         self.file_map = filemap
+
         syn.logout()
