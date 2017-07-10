@@ -9,30 +9,19 @@ import os
 datadir = os.getenv('PARKINSON_DREAM_DATA')
 
 class WalkingActivity(object):
-    def __init__(self, reload_ = False):
-        
-        self.downloadpath = datadir + "download/"
-        self.cachepath =  self.downloadpath + "json_file_map.pkl"
-        
+    def __init__(self, limit = None):
+
         self.synapselocation = 'syn10146553'
 
-        if not os.path.exists(self.downloadpath) or reload_ or \
-            not os.path.exists(self.cachepath):
-            shutil.rmtree(self.downloadpath, ignore_errors = True)
-            self.download()
-        
-        self.load()
-        
-    
-    def load(self):
-        self.commondescr, self.file_map =  joblib.load(self.cachepath)
-    
+        self.download(limit)
+
+
     def getCommonDescriptor(self):
         '''
         Method returns the pandas dataframe containing 'recordId' and 'healthCode'
         '''
         return self.commondescr
-    
+
     def getFileMap(self):
         '''
         Method returns a dictionary containing the filehandles as keys and
@@ -40,14 +29,16 @@ class WalkingActivity(object):
         '''
         return self.file_map
 
-    def download(self):
+    def download(self, limit):
 
-        os.mkdir(self.downloadpath)
         syn = synapseclient.Synapse()
 
         syn.login()
 
-        results = syn.tableQuery('select * from {}'.format(self.synapselocation))
+        selectstr = 'select * from {}'.format(self.synapselocation)
+        if limit:
+            selectstr += " limit {:d}".format(limit)
+        results = syn.tableQuery(selectstr)
 
         df = results.asDataFrame()
 
@@ -56,17 +47,12 @@ class WalkingActivity(object):
         df[df.columns[5:-1]] = df[df.columns[5:-1]].astype("int64")
 
         filemap = {}
-    
+
         for col in df.columns[5:-1]:
             print("Downloading {}".format(col))
             json_files = syn.downloadTableColumns(results, col)
-
-            for fileid in json_files:
-                shutil.move(json_files[fileid], self.downloadpath + \
-                        json_files[fileid].split("/")[-1])
-                json_files[fileid] = self.downloadpath + \
-                        json_files[fileid].split("/")[-1]
             filemap.update(json_files)
 
-        joblib.dump((df, filemap), self.cachepath)
-    
+        self.commondescr = df
+        self.file_map = filemap
+        syn.logout()
