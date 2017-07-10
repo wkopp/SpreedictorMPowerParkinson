@@ -10,27 +10,16 @@ datadir = os.getenv('PARKINSON_DREAM_DATA')
 class Demographics():
 
     def __init__(self, reload_ = False):
-        self.downloadpath = datadir + "download/"
-        self.cachepath =  self.downloadpath + "demographics.pkl"
         self.synapselocation = "syn10146552"
         
-        if not os.path.exists(self.downloadpath) or reload_ or \
-            not os.path.exists(self.cachepath):
-            shutil.rmtree(self.downloadpath, ignore_errors = True)
-            self.download()
-        
-        self.load()
+        self.download()
         
     
-    def load(self):
-        self.dataframe =  joblib.load(self.cachepath)
-
     def download(self):
         '''
         Download dataset as pandas dataframe
         '''
 
-        os.mkdir(self.downloadpath)
         syn = synapseclient.Synapse()
 
         syn.login()
@@ -42,7 +31,8 @@ class Demographics():
         df = results.asDataFrame()
         df["idx"]=df.index
 
-        joblib.dump(df, self.cachepath)
+        syn.logout()
+        self.dataframe = df
 
     def getData(self):
         return self.dataframe
