@@ -20,15 +20,7 @@ class DeviceMotion(WalkingActivity):
                     variant+".json.items"].iloc[idx])
             if fid in self.file_map:
                 content = pd.read_json(self.file_map[fid])
-                for col in content.columns:
-                    if col == "timestamp":
-                        continue
-                    for key in content[col][0]:
-                        content[col + "_" + key] = [ d[key] \
-                            for d in content[col].values]
-                content.drop(['attitude', 'magneticField', 'gravity', \
-                        'rotationRate', 'userAcceleration'], \
-                        inplace =True, axis=1)
+                content = self.process_deviceMotion(content)
             else:
                 # what to return for missing values?
                 # Maybe there are better alternatives
