@@ -54,3 +54,6 @@ class WalkingActivity(object):
         self.file_map = filemap
 
         syn.logout()
+
+if __name__ == '__main__':
+    wa = WalkingActivity(100)
