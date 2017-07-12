@@ -168,7 +168,7 @@ class WalkingActivity(object):
         else:
             n_modality_variants = len(self.modality_variants_timeseries)
             n_timeseries = self.commondescr.shape[0]
-            ts_lengths = np.empty((n_timeseries, n_modality_variants * 2))
+            ts_lengths = np.empty((n_timeseries, n_modality_variants * 3))
             ts_lengths[:] = np.nan
 
             for i_col, (modality, variant) in enumerate(self.modality_variants_timeseries):
@@ -178,12 +178,14 @@ class WalkingActivity(object):
                     ts = self.getEntryByIndex(i_row, modality=modality, variant=variant)
                     if ts.size > 0:
                         ts_lengths[i_row, i_col] = ts.shape[0]
-                        ts_lengths[i_row, i_col + n_modality_variants] = ts['timestamp'][1] - ts['timestamp'][0]
+                        ts_lengths[i_row, i_col + 1 * n_modality_variants] = ts['timestamp'].diff().mean()
+                        ts_lengths[i_row, i_col + 2 * n_modality_variants] = ts['timestamp'].diff().ptp()
 
             df_ts_lengths = pd.DataFrame(
                 data=ts_lengths,
                 columns=['_'.join(x) for x in self.modality_variants_timeseries] +
-                        ['_'.join(x + ('timestep',)) for x in self.modality_variants_timeseries]
+                        ['_'.join(x + ('timestep_mean',)) for x in self.modality_variants_timeseries] +
+                        ['_'.join(x + ('timestep_ptp',)) for x in self.modality_variants_timeseries]
             )
             df_ts_lengths[['recordId', 'healthCode']] = self.getCommonDescriptor()[
                 ['recordId', 'healthCode']].reset_index(drop=True)
