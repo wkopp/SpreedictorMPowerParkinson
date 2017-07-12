@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 import os
 import joblib
+from demographics import Demographics
 import itertools
 import quaternion
 
@@ -76,6 +77,9 @@ class WalkingActivity(object):
                 json_files = syn.downloadTableColumns(results, col)
                 filemap.update(json_files)
 
+        dem = Demographics().getData()[["healthCode", "professional-diagnosis"]]
+
+        df = pd.merge(df, dem, on = "healthCode")
         self.commondescr = df
         self.file_map = filemap
 
