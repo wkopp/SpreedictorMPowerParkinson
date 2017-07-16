@@ -122,7 +122,7 @@ class WalkingActivity(object):
 
         fid = dataEntry[colname]
 
-        if pd.isnull(fid[0]):
+        if pd.isnull(fid.iloc[0]):
             return pd.DataFrame()
 
         fid = str(int(fid))
@@ -134,7 +134,7 @@ class WalkingActivity(object):
         if modality == 'deviceMotion':
             self.process_deviceMotion(content)
 
-        content['healthCode'] = dataEntry["healthCode"][0]
+        content['healthCode'] = dataEntry["healthCode"].iloc[0]
         content['recordId'] = recordId
         if not modality == 'pedometer':
             content['time_in_task'] = content['timestamp'] - content['timestamp'][0]
