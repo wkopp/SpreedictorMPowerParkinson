@@ -122,7 +122,7 @@ class WalkingActivity(object):
 
         fid = dataEntry[colname]
 
-        if pd.isnull(fid[0]):
+        if pd.isnull(fid.iloc[0]):
             return pd.DataFrame()
 
         fid = str(int(fid))
@@ -134,10 +134,10 @@ class WalkingActivity(object):
         if modality == 'deviceMotion':
             self.process_deviceMotion(content)
 
-        content['healthCode'] = dataEntry["healthCode"][0]
+        content['healthCode'] = dataEntry["healthCode"].iloc[0]
         content['recordId'] = recordId
         if not modality == 'pedometer':
-            content['time_in_task'] = content['timestamp'] - content['timestamp'][0]
+            content['time_in_task'] = content['timestamp'] - content['timestamp'].iloc[0]
 
         return content
 
@@ -199,8 +199,8 @@ class WalkingActivity(object):
         return df_ts_lengths
 
 if __name__ == '__main__':
-    wa = WalkingActivity(limit = 3000, download_jsons = True)
+    wa = WalkingActivity(limit = 10000, download_jsons = True)
     #ts = wa.getEntryByIndex(0, modality='pedometer', variant='outbound')
     #wa.convertUserAccelerationToWorldFrame(ts)
     #print wa.modality_variants
-    wa.extractTimeseriesLengths(limit=1000, reload_=True)
+    #wa.extractTimeseriesLengths(limit=1000, reload_=True)
