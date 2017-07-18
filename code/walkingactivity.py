@@ -15,26 +15,11 @@ class WalkingActivity(object):
     modality_variants = sorted(list(set([x for x in itertools.product(modalities, variants)]) - set([('pedometer', 'rest')])))
     modality_variants_timeseries = sorted([x for x in itertools.product(['deviceMotion', 'accel'], ['outbound', 'rest', 'return'])])
 
-    def __init__(self, limit = None, download_jsons = True, reload_ = False):
+    def __init__(self, limit = None, download_jsons = True):
 
         self.synapselocation = 'syn10146553'
 
-        self.downloadpath = datadir + "download/"
-
-        if limit:
-            self.cachepath = self.downloadpath + \
-                             "json_file_map_{:d}.pkl".format(limit)
-        else:
-            self.cachepath = self.downloadpath + "json_file_map.pkl"
-
-        if not os.path.exists(self.downloadpath) or reload_ or \
-                not os.path.exists(self.cachepath):
-            self.download(limit, download_jsons)
-        else:
-            self.load()
-
-    def load(self):
-        self.commondescr, self.file_map = joblib.load(self.cachepath)
+        self.download(limit, download_jsons)
 
     def getCommonDescriptor(self):
         '''
@@ -50,9 +35,6 @@ class WalkingActivity(object):
         return self.file_map
 
     def download(self, limit, download_jsons = True):
-
-        if not os.path.exists(self.downloadpath):
-            os.mkdir(self.downloadpath)
 
         syn = synapseclient.Synapse()
 
@@ -82,8 +64,6 @@ class WalkingActivity(object):
         df = pd.merge(df, dem, on = "healthCode")
         self.commondescr = df
         self.file_map = filemap
-
-        joblib.dump((df, filemap), self.cachepath)
 
         syn.logout()
 
@@ -203,4 +183,4 @@ if __name__ == '__main__':
     #ts = wa.getEntryByIndex(0, modality='pedometer', variant='outbound')
     #wa.convertUserAccelerationToWorldFrame(ts)
     #print wa.modality_variants
-    #wa.extractTimeseriesLengths(limit=1000, reload_=True)
+    wa.extractTimeseriesLengths(limit=1000)
