@@ -179,8 +179,8 @@ class WalkingActivity(object):
         return df_ts_lengths
 
 if __name__ == '__main__':
-    wa = WalkingActivity(limit = 10000, download_jsons = True)
+    wa = WalkingActivity(limit = None, download_jsons = True)
     #ts = wa.getEntryByIndex(0, modality='pedometer', variant='outbound')
     #wa.convertUserAccelerationToWorldFrame(ts)
     #print wa.modality_variants
-    wa.extractTimeseriesLengths(limit=1000)
+    #wa.extractTimeseriesLengths(limit=1000)
