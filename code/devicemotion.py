@@ -2,7 +2,7 @@ import itertools
 import synapseclient
 import pandas as pd
 import numpy as np
-from walkingactivity import WalkingActivity
+from cachedwalkingactivity import CachedWalkingActivity as WalkingActivity
 
 class DeviceMotion(WalkingActivity):
     def __init__(self, limit = None):
