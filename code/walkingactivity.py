@@ -48,8 +48,8 @@ class WalkingActivity(object):
         df = results.asDataFrame()
 
         df[["createdOn"]] = df[["createdOn"]].apply(pd.to_datetime)
-        #df.fillna(value=-1, inplace=True)
-        #df[df.columns[5:-1]] = df[df.columns[5:-1]].astype("int64")
+        df.fillna(value=-1, inplace=True)
+        df[df.columns[5:-1]] = df[df.columns[5:-1]].astype("int64")
 
         filemap = {}
 
