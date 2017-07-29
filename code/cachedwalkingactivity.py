@@ -14,18 +14,19 @@ class CachedWalkingActivity(WalkingActivity):
 
     def __init__(self, limit = None, download_jsons = True, reload_ = False):
 
-        self.downloadpath = datadir + "download/"
+        self.downloadpath = os.path.join(datadir,"download")
 
         if limit:
-            self.cachepath = self.downloadpath + \
-                             "json_file_map_{:d}.pkl".format(limit)
+            self.cachepath = os.path.join(self.downloadpath,
+                             "json_file_map_{:d}.pkl".format(limit))
         else:
-            self.cachepath = self.downloadpath + "json_file_map.pkl"
+            self.cachepath = os.path.join(self.downloadpath, 
+                            "json_file_map.pkl")
 
-        if not os.path.exists(self.downloadpath) or reload_ or \
-                not os.path.exists(self.cachepath):
+        if not os.path.exists(self.downloadpath):
+            os.mkdir(self.downloadpath)
 
-            os.mkdir(self.downloadpath, ignore_errors = True)
+        if  reload_ or not os.path.exists(self.cachepath):
             WalkingActivity.__init__(self, limit, download_jsons)
             joblib.dump((self.commondescr, self.file_map), self.cachepath)
 
