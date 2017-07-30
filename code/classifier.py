@@ -3,13 +3,14 @@ from modeldefs import modeldefs
 import logging
 from keras.models import Sequential, load_model
 from keras.layers import Dense
+from sklearn.model_selection import train_test_split
 import pandas as pd
 import os
 from sklearn import metrics
 import sys
 
 outputdir = os.getenv('PARKINSON_DREAM_DATA')
-logdir = os.getenv('PARKINSON_LOG_DIR')
+#logdir = os.getenv('PARKINSON_LOG_DIR')
 
 class Classifier(object):
     def __init__(self, dataset, model_definition, name, epochs,
@@ -20,6 +21,7 @@ class Classifier(object):
         :name: used to store the params and logging
 
         '''
+        logdir = os.path.join(outputdir, "logs")
         print("logdir {}".format(logdir))
         if not os.path.exists(logdir):
             os.makedirs(logdir)
@@ -32,6 +34,9 @@ class Classifier(object):
 
         self.name = name
         self.data = dataset
+        self.Xtrain, self.Xtest, self.ytrain, self.ytest = \
+             train_test_split(dataset.getData(), dataset.getLabels(),
+                test_size = 0.3, random_state=1234)
         self.modelfct = model_definition
         self.epochs = epochs
         self.dnn = self.defineModel()
@@ -52,10 +57,10 @@ class Classifier(object):
 
     def fit(self):
         self.logger.info("Start training ...")
-        X = self.data.getData()
-        y = self.data.getLabels()
+        X = self.Xtrain
+        y = self.ytrain
         self.dnn.fit(X, y, batch_size = 100, epochs = self.epochs, 
-                validation_split = 0.3)
+                validation_split = 0.1)
         self.logger.info("Finished training ...")
 
     def saveModel(self):
@@ -74,19 +79,18 @@ class Classifier(object):
     def evaluateModel(self):
         # determine
 
-        X = self.data.getData()
-        labels = self.data.getLabels()
+        X = self.Xtest
+        y = self.ytest
         
-        scores = self.dnn.predict(X, batch_size = 1000)
-        print(scores.shape)
-        print(labels.shape)
+        scores = self.dnn.predict(X, batch_size = 100)
 
-        auc = metrics.roc_auc_score(labels, scores)
-        prc = metrics.average_precision_score(labels, scores)
-        f1score = metrics.f1_score(labels, scores.round())
-        acc = metrics.accuracy_score(labels, scores.round())
-        perf = pd.DataFrame([[auc,prc,f1score, acc]], 
-            columns=["auROC", "auPRC", "F1", "Accuracy"])
+        auc = metrics.roc_auc_score(y, scores)
+        prc = metrics.average_precision_score(y, scores)
+        f1score = metrics.f1_score(y, scores.round())
+        acc = metrics.accuracy_score(y, scores.round())
+        dname, mname = self.name.split('.')
+        perf = pd.DataFrame([[dname, mname,auc,prc,f1score, acc]], 
+            columns=["dataset", "model", "auROC", "auPRC", "F1", "Accuracy"])
 
         summary_path = os.path.join(outputdir, "perf_summary")
         if not os.path.exists(summary_path):
@@ -115,15 +119,11 @@ if __name__ == "__main__":
             help = "Selection of Datasets:" + helpstr)
     parser.add_argument('--name', dest="name", default="", help = "Name-tag")
     parser.add_argument('--epochs', dest="epochs", type=int, 
-            default=100, help = "Number of epochs")
-    #data = sys.argv[1]
-    #print("data={}".format(data))
-    #model = sys.argv[2]
-    #print("model={}".format(model))
+            default=30, help = "Number of epochs")
 
     args = parser.parse_args()
     print(args.name)
-    name = '_'.join([args.name, args.data, args.model])
+    name = '.'.join([args.data, args.model])
 
     model = Classifier(dataset[args.data](), 
             modeldefs[args.model], name=name,
