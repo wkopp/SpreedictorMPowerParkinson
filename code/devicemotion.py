@@ -20,8 +20,12 @@ class DeviceMotion(WalkingActivity):
                     variant+".json.items"].iloc[idx])
             if fid in self.file_map:
                 content = pd.read_json(self.file_map[fid])
+                if content.empty:
+                    # there are also files, containing no measurements
+                    return None
                 content = self.process_deviceMotion(content)
             else:
+                return None
                 # what to return for missing values?
                 # Maybe there are better alternatives
                 names =[ '_'.join(el) for el in itertools.product(\

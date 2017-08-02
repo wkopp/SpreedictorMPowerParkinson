@@ -8,14 +8,14 @@ from removenonewalk_devicemotion import RemoveNoneWalkDeviceMotionRest
 from removenonewalk_devicemotion import RemoveNoneWalkDeviceMotionReturn
 
 dataset = {'ruao':RawUserAccelOutbound,
-            'ruaret':RawUserAccelReturn,
+#            'ruaret':RawUserAccelReturn,
             'ruar':RawUserAccelRest,
         'rdmo':RawDeviceMotionOutbound,
-        'rdmret':RawDeviceMotionReturn, 
+#        'rdmret':RawDeviceMotionReturn, 
         'rdmr':RawDeviceMotionRest, 
         'nydmo':NonYDeviceMotionOutbound,
         'rnwdmo': RemoveNoneWalkDeviceMotionOutbound,
         'rnwdmr': RemoveNoneWalkDeviceMotionRest,
-        'rnwdmret': RemoveNoneWalkDeviceMotionReturn,
+#        'rnwdmret': RemoveNoneWalkDeviceMotionReturn,
 
 }

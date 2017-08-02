@@ -102,7 +102,7 @@ class WalkingActivity(object):
 
         fid = dataEntry[colname]
 
-        if pd.isnull(fid.iloc[0]):
+        if pd.isnull(fid.iloc[0]) or fid < 0:
             return pd.DataFrame()
 
         fid = str(int(fid))
