@@ -9,13 +9,13 @@ from numpydataset import NumpyDataset
 datadir = os.getenv('PARKINSON_DREAM_DATA')
 
 class RemoveNoneWalkDeviceMotion(NumpyDataset):
-    def __init__(self, variant, limit = None, reload_ = False):
+    def __init__(self, variant, reload_ = False):
         self.npcachefile = os.path.join(datadir, 
                 "removednonwalk_devicemotion_{}.pkl".format(variant))
 
         self.columns = list(itertools.product(["userAcceleration",
             "gravity", "rotationRate"], ["x","y","z"]))
-        NumpyDataset.__init__(self, variant, limit, reload_)
+        NumpyDataset.__init__(self, "deviceMotion", variant, reload_)
 
     def getValues(self, df):
         # only retain timepoints with y>0.8 or y< -0.8
@@ -38,19 +38,19 @@ class RemoveNoneWalkDeviceMotionOutbound(RemoveNoneWalkDeviceMotion):
     '''
     Filtered Non-Y up or down device motion data for outbound walk
     '''
-    def __init__(self, limit = None):
-        RemoveNoneWalkDeviceMotion.__init__(self, "outbound", limit)
+    def __init__(self):
+        RemoveNoneWalkDeviceMotion.__init__(self, "outbound")
 
 class RemoveNoneWalkDeviceMotionRest(RemoveNoneWalkDeviceMotion):
     '''
     Filtered Non-Y up or down device motion data for rest phase
     '''
-    def __init__(self, limit = None):
-        RemoveNoneWalkDeviceMotion.__init__(self, "rest", limit)
+    def __init__(self):
+        RemoveNoneWalkDeviceMotion.__init__(self, "rest")
 
 class RemoveNoneWalkDeviceMotionReturn(RemoveNoneWalkDeviceMotion):
     '''
     Filtered Non-Y up or down device motion data for return walk
     '''
-    def __init__(self, limit = None):
-        RemoveNoneWalkDeviceMotion.__init__(self, "return", limit)
+    def __init__(self):
+        RemoveNoneWalkDeviceMotion.__init__(self, "return")

@@ -1,19 +1,47 @@
 from datasets import dataset
 from modeldefs import modeldefs
 import logging
-from keras.models import Sequential, load_model
+import tensorflow as tf
+from keras.backend.tensorflow_backend import set_session
+config = tf.ConfigProto()
+config.gpu_options.per_process_gpu_memory_fraction = 0.3
+config.gpu_options.visible_device_list = "0"
+set_session(tf.Session(config=config))
+
+from keras.models import Model, load_model
 from keras.layers import Dense
 from sklearn.model_selection import train_test_split
 import pandas as pd
+import numpy as np
 import os
 from sklearn import metrics
 import sys
 
 outputdir = os.getenv('PARKINSON_DREAM_DATA')
+
+def generate_data(dataset, indices, batchsize, transform = True):
+    while 1:
+        #create a dict
+        ib = 0
+        while ib <= len(indices)//batchsize:
+            Xinput = {}
+            for ipname in dataset.keys():
+                Xinput[ipname] = dataset[ipname].getData(transform)[
+                    indices[ib*batchsize:(ib+1)*batchsize]]
+                
+            yinput = dataset['input_1'].getLabels()[
+                    indices[ib*batchsize:(ib+1)*batchsize]]
+            ib += 1
+
+            #print("{}-{}-{}".format(ib, Xinput['input_1'].shape,yinput.shape))
+            #print(Xinput['input_1'].shape)
+            #print(yinput.shape)
+            yield Xinput, yinput
+        
 #logdir = os.getenv('PARKINSON_LOG_DIR')
 
 class Classifier(object):
-    def __init__(self, dataset, model_definition, name, epochs,
+    def __init__(self, datadict, model_definition, name, epochs,
         logs = "model.log"):
         '''
         :input: is a class that contains the input for the prediction
@@ -22,7 +50,6 @@ class Classifier(object):
 
         '''
         logdir = os.path.join(outputdir, "logs")
-        print("logdir {}".format(logdir))
         if not os.path.exists(logdir):
             os.makedirs(logdir)
 
@@ -33,20 +60,32 @@ class Classifier(object):
         self.logger = logging.getLogger(name)
 
         self.name = name
-        self.data = dataset
-        self.Xtrain, self.Xtest, self.ytrain, self.ytest = \
-             train_test_split(dataset.getData(), dataset.getLabels(),
-                test_size = 0.3, random_state=1234)
-        self.modelfct = model_definition
+        self.data = datadict
+        self.Ndatapoints = datadict['input_1'].getNdatapoints()
+        permidxs = list(np.random.permutation(self.Ndatapoints))
+
+        test_faction = 0.3
+        self.train_idxs = permidxs[int(0.3*self.Ndatapoints):]
+        self.test_idxs = permidxs[:int(0.3*self.Ndatapoints)]
+        #self.Xtrain, self.Xtest, self.ytrain, self.ytest = \
+             #train_test_split(dataset.getData(), dataset.getLabels(),
+                #test_size = 0.3, random_state=1234)
+        self.modelfct = model_definition[0]
+        self.modelparams = model_definition[1]
         self.epochs = epochs
         self.dnn = self.defineModel()
 
     def defineModel(self):
-        model = Sequential()
+        #model = Model()
 
-        model = self.modelfct(model, self.data.getShape())
+        print(self.modelfct)
+        print(self.data)
+        print(self.modelparams)
+        inputs, outputs = self.modelfct(self.data, self.modelparams)
         
-        model.add(Dense(1, activation='sigmoid'))
+        outputs = Dense(1, activation='sigmoid', name="main_output")(outputs)
+        #model.add(Dense(1, activation='sigmoid'))
+        model = Model(inputs = inputs, outputs = outputs)
         
         model.compile(loss='binary_crossentropy',
                     optimizer='adadelta',
@@ -57,10 +96,21 @@ class Classifier(object):
 
     def fit(self):
         self.logger.info("Start training ...")
-        X = self.Xtrain
-        y = self.ytrain
-        self.dnn.fit(X, y, batch_size = 100, epochs = self.epochs, 
-                validation_split = 0.1)
+        #X = self.Xtin
+
+        train_idx = self.train_idxs[:int(len(self.train_idxs)*.9)]
+        val_idx = self.train_idxs[int(len(self.train_idxs)*.9):]
+        #y = self.ytrain
+        self.dnn.fit_generator(generate_data(self.data, train_idx, 100),
+            steps_per_epoch = len(train_idx)//100, epochs = self.epochs, 
+            validation_data = generate_data(self.data, val_idx, 100),
+            validation_steps = len(val_idx)//100, use_multiprocessing = True)
+        print(len(train_idx)//100)
+        print(len(val_idx)//100)
+       # model.fit_generator(generate_arrays_from_file('/my_file.txt'),
+       # steps_per_epoch=1000, epochs=10)
+       # self.dnn.fit(X, y, batch_size = 100, epochs = self.epochs, 
+       #         validation_split = 0.1)
         self.logger.info("Finished training ...")
 
     def saveModel(self):
@@ -76,13 +126,17 @@ class Classifier(object):
         self.dnn = load_model(filename)
 
 
-    def evaluateModel(self):
+    def evaluate(self):
         # determine
 
-        X = self.Xtest
-        y = self.ytest
+        #X = self.Xtest
+        #y = self.ytest
+        yinput = self.data['input_1'].getLabels()
+        y = yinput[:(len(self.test_idxs)//100)*100]
         
-        scores = self.dnn.predict(X, batch_size = 100)
+        scores = self.dnn.predict_generator(generate_data(self.data, 
+            self.test_idxs, 100, False), 
+            steps = len(self.test_idxs)//100)
 
         auc = metrics.roc_auc_score(y, scores)
         prc = metrics.average_precision_score(y, scores)
@@ -109,12 +163,14 @@ if __name__ == "__main__":
             RawTextHelpFormatter)
     helpstr = "Models:\n"
     for mkey in modeldefs:
-            helpstr += mkey +"\t"+modeldefs[mkey].__doc__+"\n"
+            helpstr += mkey +"\t"+modeldefs[mkey][0].__doc__.format(*modeldefs[mkey][1])+"\n"
     parser.add_argument('model', choices = [ k for k in modeldefs],
             help = "Selection of Models:" + helpstr)
     helpstr = "Datasets:\n"
     for dkey in dataset:
-            helpstr += dkey +"\t"+dataset[dkey].__doc__+"\n"
+            # for now lets stick with input_1 only
+            # TODO: later make this more general
+            helpstr += dkey +"\t"+dataset[dkey]['input_1'].__doc__+"\n"
     parser.add_argument('data', choices = [ k for k in dataset],
             help = "Selection of Datasets:" + helpstr)
     parser.add_argument('--name', dest="name", default="", help = "Name-tag")
@@ -125,9 +181,12 @@ if __name__ == "__main__":
     print(args.name)
     name = '.'.join([args.data, args.model])
 
-    model = Classifier(dataset[args.data](), 
+    da = {}
+    for k in dataset[args.data].keys():
+        da[k] = dataset[args.data][k]()
+    model = Classifier(da, 
             modeldefs[args.model], name=name,
                         epochs = args.epochs)
     model.fit()
     model.saveModel()
-    model.evaluateModel()
+    model.evaluate()

@@ -1,91 +1,56 @@
+from keras.layers import Input
 from keras.layers.recurrent import LSTM
 from keras.layers.convolutional import Conv1D
 from keras.layers.pooling import GlobalAveragePooling1D
+from functools import wraps
 
 
-def model_conv_30_100(model, dims):
+def compatibilityCheck(expected_args):
+    def decorator(func):
+        @wraps(func)
+        def wrapper(*args):
+            print(args)
+            print(expected_args)
+            if not type(args[0]) == dict:
+                raise Exception("argument must be a dictionary")
+            if not set(args[0].keys()) == set(expected_args):
+                raise Exception("data and model not compatible")
+            return func(*args)
+        return wrapper
+    return decorator
+
+@compatibilityCheck(['input_1'])
+def model_conv_glob(data, paramdims):
     '''
-    One Conv1D layer with 30 kernels of length 100
+    Conv1D: 
+        {} x {}, relu
+        GlobPool
     '''
-    model.add(Conv1D(30, kernel_size=(100), 
-            activation = 'relu', input_shape=dims))
-    model.add(GlobalAveragePooling1D())
+    input = Input(shape=data['input_1'].getShape(), name='input_1')
+    layer = Conv1D(paramdims[0], kernel_size=(paramdims[1]), activation = 'relu')(input)
+    output = GlobalAveragePooling1D()(layer)
+    return input, output
 
-    return model
-
-def model_conv_30_50(model, dims):
+@compatibilityCheck(['input_1'])
+def model_lstm(data, paramdims):
     '''
-    One Conv1D layer with 30 kernels of length 50
+    LSTM: 
+        {}, relu
+        GlobPool
     '''
-    model.add(Conv1D(30, kernel_size=(50), 
-            activation = 'relu', input_shape=dims))
-    model.add(GlobalAveragePooling1D())
+    input = Input(shape=data['input_1'].getShape(), name='input_1')
+    layer = LSTM(paramdims[0], return_sequences = True)(input)
+    #layer = Conv1D(paramdims[0], kernel_size=(paramdims[1]), activation = 'relu')(input)
+    output = GlobalAveragePooling1D()(layer)
 
-    return model
+    return input, output
 
-def model_conv_30_200(model, dims):
-    '''
-    One Conv1D layer with 30 kernels of length 200
-    '''
-    model.add(Conv1D(30, kernel_size=(200), 
-            activation = 'relu', input_shape=dims))
-    model.add(GlobalAveragePooling1D())
-
-    return model
-
-def model_conv_30_300(model, dims):
-    '''
-    One Conv1D layer with 30 kernels of length 300
-    '''
-    model.add(Conv1D(30, kernel_size=(300), 
-            activation = 'relu', input_shape=dims))
-    model.add(GlobalAveragePooling1D())
-
-    return model
-
-def model_conv_30_400(model, dims):
-    '''
-    One Conv1D layer with 30 kernels of length 400
-    '''
-    model.add(Conv1D(30, kernel_size=(400), 
-            activation = 'relu', input_shape=dims))
-    model.add(GlobalAveragePooling1D())
-
-    return model
-
-def model_conv_30_500(model, dims):
-    '''
-    One Conv1D layer with 30 kernels of length 500
-    '''
-    model.add(Conv1D(30, kernel_size=(500), 
-            activation = 'relu', input_shape=dims))
-    model.add(GlobalAveragePooling1D())
-
-    return model
-
-def model_lstm_16(model, dims):
-    '''
-    One LSTM layer with 16 units
-    '''
-    model.add(LSTM(16, input_shape=dims))
-
-    return model
-
-def model_lstm_32(model, dims):
-    '''
-    One LSTM layer with 32 units
-    '''
-    model.add(LSTM(32, input_shape=dims))
-
-    return model
-
-
-modeldefs = { 'conv_30_100': model_conv_30_100,
-                'conv_30_200': model_conv_30_200,
-                'conv_30_300': model_conv_30_300,
-                'conv_30_400': model_conv_30_400,
-                'conv_30_500': model_conv_30_500,
-                'conv_30_50': model_conv_30_50,
-        #        'lstm_16': model_lstm_16,
-        #        'lstm_32': model_lstm_32,
- }
+modeldefs = { 'conv_30_100': (model_conv_glob, (30,100)),
+                'conv_30_200': (model_conv_glob, (30,200)),
+                'conv_30_300': (model_conv_glob, (30,300)),
+                'conv_30_400': (model_conv_glob, (30,400)),
+                'conv_30_500': (model_conv_glob, (30,500)),
+                'conv_30_50': (model_conv_glob, (30,50)),
+                #'lstm_16': (model_lstm, (16,)),
+                #'lstm_32': (model_lstm, (32,)),
+}

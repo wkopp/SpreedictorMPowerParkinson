@@ -8,12 +8,12 @@ from numpydataset import NumpyDataset
 
 datadir = os.getenv('PARKINSON_DREAM_DATA')
 
-class RawUserAccel(NumpyDataset):
+class RawRotationRate(NumpyDataset):
     def __init__(self, variant, reload_ = False):
         self.npcachefile = os.path.join(datadir, 
-                "rawuseraccel_{}.pkl".format(variant))
+                "rawrotationrate_{}.pkl".format(variant))
 
-        self.columns = list(itertools.product(["userAcceleration"], \
+        self.columns = list(itertools.product(["rotationRate"], \
                     ["x","y","z"]))
         NumpyDataset.__init__(self, "deviceMotion", variant, reload_)
 
@@ -21,23 +21,23 @@ class RawUserAccel(NumpyDataset):
         return df[[ "_".join(el) for \
             el in self.columns]].values
 
-class RawUserAccelOutbound(RawUserAccel):
+class RawRotationRateOutbound(RawRotationRate):
     '''
-    Raw userAcceleration data for outbound walk
+    Raw rotationRate for outbound walk
     '''
     def __init__(self):
-        RawUserAccel.__init__(self, "outbound")
+        RawRotationRate.__init__(self, "outbound")
 
-class RawUserAccelRest(RawUserAccel):
+class RawRotationRateRest(RawRotationRate):
     '''
-    Raw userAcceleration data for rest phase
+    Raw rotationRate for rest phase
     '''
     def __init__(self):
-        RawUserAccel.__init__(self, "rest")
+        RawRotationRate.__init__(self, "rest")
 
-class RawUserAccelReturn(RawUserAccel):
+class RawRotationRateReturn(RawRotationRate):
     '''
-    Raw userAcceleration data for return walk
+    Raw rotationRate for return walk
     '''
     def __init__(self):
-        RawUserAccel.__init__(self, "return")
+        RawRotationRate.__init__(self, "return")
