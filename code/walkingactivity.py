@@ -102,7 +102,8 @@ class WalkingActivity(object):
 
         fid = dataEntry[colname]
 
-        if pd.isnull(fid.iloc[0]) or fid < 0:
+        #print(fid)
+        if int(fid) < 0:
             return pd.DataFrame()
 
         fid = str(int(fid))
@@ -110,6 +111,10 @@ class WalkingActivity(object):
             raise Exception('fileid "{}" not found'.format(fid))
 
         content = pd.read_json(self.file_map[fid])
+
+        if content.empty:
+            # there are also files, containing no measurements
+            return pd.DataFrame()
 
         if modality == 'deviceMotion':
             self.process_deviceMotion(content)
