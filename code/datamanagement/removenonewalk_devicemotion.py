@@ -38,19 +38,19 @@ class RemoveNoneWalkDeviceMotionOutbound(RemoveNoneWalkDeviceMotion):
     '''
     Filtered Non-Y up or down device motion data for outbound walk
     '''
-    def __init__(self):
-        RemoveNoneWalkDeviceMotion.__init__(self, "outbound")
+    def __init__(self, reload_ = False):
+        RemoveNoneWalkDeviceMotion.__init__(self, "outbound", reload_)
 
 class RemoveNoneWalkDeviceMotionRest(RemoveNoneWalkDeviceMotion):
     '''
     Filtered Non-Y up or down device motion data for rest phase
     '''
-    def __init__(self):
-        RemoveNoneWalkDeviceMotion.__init__(self, "rest")
+    def __init__(self, reload_ = False):
+        RemoveNoneWalkDeviceMotion.__init__(self, "rest", reload_)
 
 class RemoveNoneWalkDeviceMotionReturn(RemoveNoneWalkDeviceMotion):
     '''
     Filtered Non-Y up or down device motion data for return walk
     '''
-    def __init__(self):
-        RemoveNoneWalkDeviceMotion.__init__(self, "return")
+    def __init__(self, reload_ = False):
+        RemoveNoneWalkDeviceMotion.__init__(self, "return", reload_)

@@ -8,7 +8,7 @@ from numpydataset import NumpyDataset
 
 datadir = os.getenv('PARKINSON_DREAM_DATA')
 
-class SvdUserAccel(NumpyDataset):
+class SvdRotationRate(NumpyDataset):
     def __init__(self, variant, reload_ = False):
         self.npcachefile = os.path.join(datadir, 
                 "svduseraccel_{}.pkl".format(variant))
@@ -23,23 +23,23 @@ class SvdUserAccel(NumpyDataset):
         U, s, V = np.linalg.svd(M, full_matrices = 0)
         return np.dot(U,np.diag(s))
 
-class SvdUserAccelOutbound(SvdUserAccel):
+class SvdRotationRateOutbound(SvdRotationRate):
     '''
-    SVD userAcceleration data for outbound walk
+    Raw rotationrate for outbound walk
     '''
-    def __init__(self):
-        SvdUserAccel.__init__(self, "outbound")
+    def __init__(self, reload_ = False):
+        SvdRotationRate.__init__(self, "outbound", reload_)
 
-class SvdUserAccelRest(SvdUserAccel):
+class SvdRotationRateRest(SvdRotationRate):
     '''
-    SVD userAcceleration data for rest phase
+    Raw rotationrate for rest phase
     '''
-    def __init__(self):
-        SvdUserAccel.__init__(self, "rest")
+    def __init__(self, reload_ = False):
+        SvdRotationRate.__init__(self, "rest", reload_)
 
-class SvdUserAccelReturn(SvdUserAccel):
+class SvdRotationRateReturn(SvdRotationRate):
     '''
-    SVD userAcceleration data for return walk
+    Raw rotationrate for return walk
     '''
-    def __init__(self):
-        SvdUserAccel.__init__(self, "return")
+    def __init__(self, reload_ = False):
+        SvdRotationRate.__init__(self, "return", reload_)

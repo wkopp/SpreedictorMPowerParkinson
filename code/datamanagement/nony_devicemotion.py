@@ -26,19 +26,19 @@ class NonYDeviceMotionOutbound(NonYDeviceMotion):
     '''
     Filtered Non-Y up or down device motion data for outbound walk
     '''
-    def __init__(self):
-        NonYDeviceMotion.__init__(self, "outbound")
+    def __init__(self, reload_ = False):
+        NonYDeviceMotion.__init__(self, "outbound", reload_)
 
 class NonYDeviceMotionRest(NonYDeviceMotion):
     '''
     Filtered Non-Y up or down device motion data for rest phase
     '''
-    def __init__(self):
-        NonYDeviceMotion.__init__(self, "rest")
+    def __init__(self, reload_ = False):
+        NonYDeviceMotion.__init__(self, "rest", reload_)
 
 class NonYDeviceMotionReturn(NonYDeviceMotion):
     '''
     Filtered Non-Y up or down device motion data for return walk
     '''
-    def __init__(self):
-        NonYDeviceMotion.__init__(self, "return")
+    def __init__(self, reload_ = False):
+        NonYDeviceMotion.__init__(self, "return", reload_)

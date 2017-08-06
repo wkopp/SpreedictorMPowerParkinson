@@ -27,19 +27,19 @@ class RawDeviceMotionOutbound(RawDeviceMotion):
     '''
     Raw device motion data for outbound walk
     '''
-    def __init__(self):
-        RawDeviceMotion.__init__(self, "outbound")
+    def __init__(self, reload_ = False):
+        RawDeviceMotion.__init__(self, "outbound", reload_)
 
 class RawDeviceMotionRest(RawDeviceMotion):
     '''
     Raw device motion data for rest phase
     '''
-    def __init__(self):
-        RawDeviceMotion.__init__(self, "rest")
+    def __init__(self, reload_ = False):
+        RawDeviceMotion.__init__(self, "rest", reload_)
 
 class RawDeviceMotionReturn(RawDeviceMotion):
     '''
     Raw device motion data for return walk
     '''
-    def __init__(self):
-        RawDeviceMotion.__init__(self, "return")
+    def __init__(self, reload_ = False):
+        RawDeviceMotion.__init__(self, "return", reload_)

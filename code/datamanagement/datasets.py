@@ -15,14 +15,14 @@ dataset = {
 
 
         #Raw rotationRate
-        'ruao':{'input_1':RawRotationRateOutbound},
-        'ruaret':{'input_1':RawRotationRateReturn},
-        'ruar':{'input_1':RawRotationRateRest},
+        'rroto':{'input_1':RawRotationRateOutbound},
+        'rrotret':{'input_1':RawRotationRateReturn},
+        'rrotr':{'input_1':RawRotationRateRest},
 
-        #Raw rotationRate
-        'ruao':{'input_1':RawGravityOutbound},
-        'ruaret':{'input_1':RawGravityReturn},
-        'ruar':{'input_1':RawGravityRest},
+        #Raw Gravity
+        'rgro':{'input_1':RawGravityOutbound},
+        'rgrret':{'input_1':RawGravityReturn},
+        'rgrr':{'input_1':RawGravityRest},
 
         #Raw DeviceMotion (all measurements)
         'rdmo':{'input_1':RawDeviceMotionOutbound},
@@ -31,6 +31,8 @@ dataset = {
 
         #Remove None-Y
         'nydmo':{'input_1':NonYDeviceMotionOutbound},
+        'nydmr':{'input_1':NonYDeviceMotionRest},
+        'nydmret':{'input_1':NonYDeviceMotionReturn},
 
         #RemoveNoneWalk
         'rnwdmo': {'input_1':RemoveNoneWalkDeviceMotionOutbound},

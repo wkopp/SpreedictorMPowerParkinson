@@ -2,7 +2,7 @@
 import itertools
 import synapseclient
 from modeldefs import modeldefs
-from datasets import dataset
+from dataset.datasets import dataset
 from classifier import Classifier
 
 
@@ -12,9 +12,13 @@ for comb in all_combinations:
     print("Running {}-{}".format(comb[0],comb[1]))
     name = '.'.join(comb)
     print(name)
-    model = Classifier(dataset[comb[0]](), 
-            modeldefs[comb[1]], name=name,
-                        epochs = 30)
+
+    da = {}
+    for k in dataset[comb[0]].keys():
+        da[k] = dataset[comb[0]][k]()
+
+    model = Classifier(da, modeldefs[comb[1]], name=name, epochs = 30)
+
     model.fit()
     model.saveModel()
-    model.evaluateModel()
+    model.evaluate()
