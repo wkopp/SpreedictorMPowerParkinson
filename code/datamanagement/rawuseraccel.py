@@ -34,8 +34,11 @@ class RawUserAccel(NumpyDataset):
         NumpyDataset.__init__(self, "deviceMotion", variant, reload_)
 
     def getValues(self, df):
-        return df[[ "_".join(el) for \
+        M = df[[ "_".join(el) for \
             el in self.columns]].values
+        shift = M.mean(axis=0)
+        M -= shift
+        return M
 
 class RawUserAccelOutbound(RawUserAccel):
     '''

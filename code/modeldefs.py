@@ -31,6 +31,19 @@ def model_conv_glob(data, paramdims):
     output = GlobalAveragePooling1D()(layer)
     return input, output
 
+def model_conv_2l_glob(data, paramdims):
+    '''
+    Conv1D: 
+        {} x {}, relu
+        {} pooling
+        {} x
+        GlobPool
+    '''
+    input = Input(shape=data['input_1'].getShape(), name='input_1')
+    layer = Conv1D(paramdims[0], kernel_size=(paramdims[1]), activation = 'relu')(input)
+    output = GlobalAveragePooling1D()(layer)
+    return input, output
+
 @compatibilityCheck(['input_1'])
 def model_lstm(data, paramdims):
     '''
@@ -51,6 +64,10 @@ modeldefs = { 'conv_30_100': (model_conv_glob, (30,100)),
                 'conv_30_400': (model_conv_glob, (30,400)),
                 'conv_30_500': (model_conv_glob, (30,500)),
                 'conv_30_50': (model_conv_glob, (30,50)),
+                'conv_10_200': (model_conv_glob, (10,200)),
+                'conv_20_200': (model_conv_glob, (20,200)),
+                'conv_50_200': (model_conv_glob, (50,200)),
+                'conv_100_200': (model_conv_glob, (100,200)),
                 #'lstm_16': (model_lstm, (16,)),
                 #'lstm_32': (model_lstm, (32,)),
 }

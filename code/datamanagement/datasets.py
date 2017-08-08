@@ -6,6 +6,7 @@ from rawdevicemotion import *
 from nony_devicemotion import *
 from removenonewalk_devicemotion import *
 from svduseraccel import *
+from worldcoorduseraccel import *
 
 dataset = {
         #Raw userAccel
@@ -43,4 +44,9 @@ dataset = {
         'svduao':{'input_1':SvdUserAccelOutbound},
         'svduaret':{'input_1':SvdUserAccelReturn},
         'svduar':{'input_1':SvdUserAccelRest},
+
+        #World userAccel
+        'wcuao':{'input_1':WorldCoordUserAccelOutbound},
+        'wcuaret':{'input_1':WorldCoordUserAccelReturn},
+        'wcuar':{'input_1':WorldCoordUserAccelRest},
 }
