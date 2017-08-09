@@ -20,6 +20,8 @@ class SvdRotationRate(NumpyDataset):
     def getValues(self, df):
         M = df[[ "_".join(el) for \
             el in self.columns]].values
+        shift = M.mean(axis = 0)
+        M -= shift
         U, s, V = np.linalg.svd(M, full_matrices = 0)
         return np.dot(U,np.diag(s))
 

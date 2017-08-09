@@ -15,7 +15,7 @@ class NumpyDataset(object):
     def load(self, modality, variant):
         if not os.path.exists(self.npcachefile) or self.reload:
             activity = WalkingActivity()
-            nrows = activity.commondescr.shape[0]
+            nrows = activity.getCommonDescriptor().shape[0]
             data = np.zeros((nrows, 2000, len(self.columns)), dtype="float32")
             keepind = np.ones((nrows), dtype=bool)
             
@@ -35,19 +35,25 @@ class NumpyDataset(object):
             data = data[keepind]
             
             
-            labels = activity.commondescr["professional-diagnosis"].apply(
+            labels = activity.getCommonDescriptor()["professional-diagnosis"].apply(
                 lambda x: 1 if x==True else 0)
             labels = labels[keepind]
             
-            joblib.dump((data, labels), self.npcachefile)
+            joblib.dump((data, labels, keepind), self.npcachefile)
 
-        self.data, self.labels = joblib.load(self.npcachefile)
+        self.data, self.labels, self.keepind = joblib.load(self.npcachefile)
+
     def getData(self, transform = False):
         if transform:
             return self.transformData(self.data)
         else:
             return self.data
 
+    def getHealthCode(self):
+        activity = WalkingActivity()
+        annotation = activity.getCommonDescriptor().iloc[self.keepind]
+        return annotation["healthCode"].values
+        
     def transformData(self, data):
         return data
 

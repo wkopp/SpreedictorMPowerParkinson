@@ -31,8 +31,11 @@ class RemoveNoneWalkDeviceMotion(NumpyDataset):
         if len(idx)>0:
             df = df.iloc[idx[0]:idx[-1]]
 
-        return df[[ "_".join(el) for \
-            el in self.columns ]].values
+        M = df[[ "_".join(el) for \
+            el in self.columns]].values
+        shift = M.mean(axis=0)
+        M -= shift
+        return M
         
 class RemoveNoneWalkDeviceMotionOutbound(RemoveNoneWalkDeviceMotion):
     '''

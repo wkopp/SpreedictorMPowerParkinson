@@ -19,8 +19,11 @@ class NonYDeviceMotion(NumpyDataset):
 
     def getValues(self, df):
         df = df[(df.gravity_y>0.8) | (df.gravity_y<-0.8)]
-        return df[[ "_".join(el) for \
-            el in self.columns ]].values
+        M = df[[ "_".join(el) for \
+            el in self.columns]].values
+        shift = M.mean(axis=0)
+        M -= shift
+        return M
 
 class NonYDeviceMotionOutbound(NonYDeviceMotion):
     '''
