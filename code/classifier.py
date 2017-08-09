@@ -1,10 +1,10 @@
-from dataset.datasets import dataset
+from datamanagement.datasets import dataset
 from modeldefs import modeldefs
 import logging
 import tensorflow as tf
 from keras.backend.tensorflow_backend import set_session
 config = tf.ConfigProto()
-config.gpu_options.per_process_gpu_memory_fraction = 0.5
+config.gpu_options.per_process_gpu_memory_fraction = 0.3
 config.gpu_options.visible_device_list = "0"
 set_session(tf.Session(config=config))
 
@@ -33,6 +33,7 @@ def generate_data(dataset, indices, batchsize, augment = True):
                     indices[ib*batchsize:(ib+1)*batchsize]]
             ib += 1
 
+            #print(yinput.shape)
             yield Xinput, yinput
         
 #logdir = os.getenv('PARKINSON_LOG_DIR')
@@ -44,7 +45,6 @@ class Classifier(object):
         :input: is a class that contains the input for the prediction
         :model: is a function that defines a keras model for predicting the PD
         :name: used to store the params and logging
-
         '''
         logdir = os.path.join(outputdir, "logs")
         if not os.path.exists(logdir):
@@ -59,11 +59,54 @@ class Classifier(object):
         self.name = name
         self.data = datadict
         self.Ndatapoints = datadict['input_1'].getNdatapoints()
-        permidxs = list(np.random.permutation(self.Ndatapoints))
+        #try to use a block instead of random datapoints
+        
+        hcode = datadict['input_1'].getHealthCode()
 
-        test_faction = 0.3
-        self.train_idxs = permidxs[int(0.3*self.Ndatapoints):]
-        self.test_idxs = permidxs[:int(0.3*self.Ndatapoints)]
+        test_fraction = 0.3
+
+        # split the dataset by participants
+        # first select training and test participants
+        individuals = np.asarray(list(set(hcode)))
+        test_individuals = np.random.choice(individuals, 
+                size=int(test_fraction*len(individuals)), 
+                replace=False)
+        train_individuals = set(individuals) - set(test_individuals)
+
+        # then retrieve the associated samples for the participants
+        #permidxs = np.arange(int(0.3*self.Ndatapoints), self.Ndatapoints)
+        #np.random.shuffle(permidxs)
+        #idxs = np.zeros((self.Ndatapoints), dtype=bool)
+        self.test_idxs = []
+        for indiv in test_individuals:
+            self.test_idxs += list(np.where(hcode == indiv)[0])
+        
+        self.train_idxs = []
+        for indiv in train_individuals:
+            self.train_idxs += list(np.where(hcode == indiv)[0])
+
+#        np.random.shuffle(self.train_idxs)
+#        permidxs =  np.arange(self.Ndatapoints)
+#        np.random.shuffle(permidxs)
+#        self.test_idxs = permidxs[:int(0.3*self.Ndatapoints)]
+#        self.train_idxs = permidxs[int(0.3*self.Ndatapoints):]
+
+        self.logger.info("Number of training participants: {}".format(len(train_individuals)))
+        self.logger.info("Number of test participants: {}".format(len(test_individuals)))
+        self.logger.info("Total number of examples: {}".format(self.Ndatapoints))
+        self.logger.info("Number of training examples: {}".format(len(self.train_idxs)))
+        self.logger.info("Number of test examples: {}".format(len(self.test_idxs)))
+
+        self.logger.info("Input dimensions:")
+        for k in datadict:
+            self.logger.info("\t{}: {} x {}".format(k, datadict[k].getNdatapoints(),
+                                    datadict[k].getShape()))
+
+        #self.logger.info("Output dimension:")
+            #self.logger.info("\t{}: {}".format(k, 
+        #self.train_idxs = permidxs#[int(0.3*self.Ndatapoints):]
+        #self.test_idxs = permidxs[:int(0.3*self.Ndatapoints)]
+        #self.test_idxs = range(int(0.3*self.Ndatapoints))
 
         self.modelfct = model_definition[0]
         self.modelparams = model_definition[1]
@@ -94,7 +137,7 @@ class Classifier(object):
         self.dnn.fit_generator(generate_data(self.data, train_idx, 100),
             steps_per_epoch = len(train_idx)//100, epochs = self.epochs, 
             validation_data = generate_data(self.data, val_idx, 100),
-            validation_steps = len(val_idx)//100, use_multiprocessing = True)
+            validation_steps = len(val_idx)//100, use_multiprocessing = False)
 
         self.logger.info("Finished training ...")
 
