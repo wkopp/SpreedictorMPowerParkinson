@@ -48,8 +48,8 @@ class WalkingActivity(object):
         df = results.asDataFrame()
 
         df[["createdOn"]] = df[["createdOn"]].apply(pd.to_datetime)
-        #df.fillna(value=-1, inplace=True)
-        #df[df.columns[5:-1]] = df[df.columns[5:-1]].astype("int64")
+        df.fillna(value=-1, inplace=True)
+        df[df.columns[5:-1]] = df[df.columns[5:-1]].astype("int64")
 
         filemap = {}
 
@@ -102,7 +102,8 @@ class WalkingActivity(object):
 
         fid = dataEntry[colname]
 
-        if pd.isnull(fid.iloc[0]):
+        #print(fid)
+        if int(fid) < 0:
             return pd.DataFrame()
 
         fid = str(int(fid))
@@ -111,14 +112,17 @@ class WalkingActivity(object):
 
         content = pd.read_json(self.file_map[fid])
 
-        if content.size > 0:
-            if modality == 'deviceMotion':
-                self.process_deviceMotion(content)
+        if content.empty:
+            # there are also files, containing no measurements
+            return pd.DataFrame()
 
-            content['healthCode'] = dataEntry["healthCode"].iloc[0]
-            content['recordId'] = recordId
-            if not modality == 'pedometer':
-                content['time_in_task'] = content['timestamp'] - content['timestamp'].iloc[0]
+        if modality == 'deviceMotion':
+            self.process_deviceMotion(content)
+
+        content['healthCode'] = dataEntry["healthCode"].iloc[0]
+        content['recordId'] = recordId
+        if not modality == 'pedometer':
+            content['time_in_task'] = content['timestamp'] - content['timestamp'].iloc[0]
 
         return content
 
