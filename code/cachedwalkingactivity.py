@@ -25,7 +25,8 @@ class CachedWalkingActivity(WalkingActivity):
         if not os.path.exists(self.downloadpath) or reload_ or \
                 not os.path.exists(self.cachepath):
 
-            os.mkdir(self.downloadpath, ignore_errors = True)
+            if not os.path.exists(self.downloadpath):
+                os.mkdir(self.downloadpath)
             WalkingActivity.__init__(self, limit, download_jsons)
             joblib.dump((self.commondescr, self.file_map), self.cachepath)
 
@@ -36,9 +37,10 @@ class CachedWalkingActivity(WalkingActivity):
         self.commondescr, self.file_map = joblib.load(self.cachepath)
 
 if __name__ == '__main__':
-    wa = CachedWalkingActivity(limit = 100, download_jsons = True)
+    wa = CachedWalkingActivity(limit = None, download_jsons = True)
     #ts = wa.getEntryByIndex(0, modality='pedometer', variant='outbound')
     #wa.convertUserAccelerationToWorldFrame(ts)
     #print wa.modality_variants
+    print "extracting TS"
     wa.extractTimeseriesLengths(limit=None, reload_=True)
 

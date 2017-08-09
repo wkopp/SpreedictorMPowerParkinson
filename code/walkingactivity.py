@@ -111,13 +111,14 @@ class WalkingActivity(object):
 
         content = pd.read_json(self.file_map[fid])
 
-        if modality == 'deviceMotion':
-            self.process_deviceMotion(content)
+        if content.size > 0:
+            if modality == 'deviceMotion':
+                self.process_deviceMotion(content)
 
-        content['healthCode'] = dataEntry["healthCode"].iloc[0]
-        content['recordId'] = recordId
-        if not modality == 'pedometer':
-            content['time_in_task'] = content['timestamp'] - content['timestamp'].iloc[0]
+            content['healthCode'] = dataEntry["healthCode"].iloc[0]
+            content['recordId'] = recordId
+            if not modality == 'pedometer':
+                content['time_in_task'] = content['timestamp'] - content['timestamp'].iloc[0]
 
         return content
 
