@@ -23,7 +23,10 @@ def generate_data(dataset, indices, batchsize, augment = True):
     while 1:
         #create a dict
         ib = 0
-        while ib <= len(indices)//batchsize:
+#        print("check")
+        if len(indices) == 0:
+            raise Exception("index list is empty")
+        while ib < (len(indices)//batchsize + (1 if len(indices)%batchsize > 0 else 0)):
             Xinput = {}
             for ipname in dataset.keys():
                 Xinput[ipname] = dataset[ipname].getData(augment)[
@@ -33,7 +36,8 @@ def generate_data(dataset, indices, batchsize, augment = True):
                     indices[ib*batchsize:(ib+1)*batchsize]]
             ib += 1
 
-            #print(yinput.shape)
+            if yinput.shape[0] <=0:
+                raise Exception("generator produced empty batch")
             yield Xinput, yinput
         
 #logdir = os.getenv('PARKINSON_LOG_DIR')
@@ -58,6 +62,7 @@ class Classifier(object):
 
         self.name = name
         self.data = datadict
+        self.batchsize = 100
         self.Ndatapoints = datadict['input_1'].getNdatapoints()
         #try to use a block instead of random datapoints
         
@@ -134,10 +139,17 @@ class Classifier(object):
         train_idx = self.train_idxs[:int(len(self.train_idxs)*.9)]
         val_idx = self.train_idxs[int(len(self.train_idxs)*.9):]
 
-        history = self.dnn.fit_generator(generate_data(self.data, train_idx, 100),
-            steps_per_epoch = len(train_idx)//100, epochs = self.epochs, 
-            validation_data = generate_data(self.data, val_idx, 100),
-            validation_steps = len(val_idx)//100, use_multiprocessing = False)
+        bs = self.batchsize
+
+        history = self.dnn.fit_generator(
+            generate_data(self.data, train_idx, bs),
+            steps_per_epoch = len(train_idx)//bs + \
+                (1 if len(train_idx)%bs > 0 else 0), 
+            epochs = self.epochs, 
+            validation_data = generate_data(self.data, val_idx, bs),
+            validation_steps = len(val_idx)//bs + \
+                (1 if len(val_idx)%bs > 0 else 0), 
+            use_multiprocessing = False)
 
         self.logger.info("Performance after {} epochs: loss {:1.3f}, val-loss {:1.3f}, acc {:1.3f}, val-acc {:1.3f}".format(self.epochs,
                 history.history["loss"][-1],
@@ -165,10 +177,10 @@ class Classifier(object):
         yinput = self.data['input_1'].getLabels()
         y = yinput[self.test_idxs]
         
-        rest = 1 if len(self.test_idxs)%100 > 0 else 0
+        rest = 1 if len(self.test_idxs)%self.batchsize > 0 else 0
         scores = self.dnn.predict_generator(generate_data(self.data, 
-            self.test_idxs, 100, False), 
-            steps = len(self.test_idxs)//100 + rest)
+            self.test_idxs, self.batchsize, False), 
+            steps = len(self.test_idxs)//self.batchsize + rest)
 
         auc = metrics.roc_auc_score(y, scores)
         prc = metrics.average_precision_score(y, scores)
