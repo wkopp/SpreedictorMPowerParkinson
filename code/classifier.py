@@ -134,11 +134,16 @@ class Classifier(object):
         train_idx = self.train_idxs[:int(len(self.train_idxs)*.9)]
         val_idx = self.train_idxs[int(len(self.train_idxs)*.9):]
 
-        self.dnn.fit_generator(generate_data(self.data, train_idx, 100),
+        history = self.dnn.fit_generator(generate_data(self.data, train_idx, 100),
             steps_per_epoch = len(train_idx)//100, epochs = self.epochs, 
             validation_data = generate_data(self.data, val_idx, 100),
             validation_steps = len(val_idx)//100, use_multiprocessing = False)
 
+        self.logger.info("Performance after {} epochs: loss {:1.3f}, val-loss {:1.3f}, acc {:1.3f}, val-acc {:1.3f}".format(self.epochs,
+                history.history["loss"][-1],
+                history.history["val_loss"][-1],
+                history.history["acc"][-1],
+                history.history["val_acc"][-1]))
         self.logger.info("Finished training ...")
 
     def saveModel(self):
@@ -205,7 +210,6 @@ if __name__ == "__main__":
             default=30, help = "Number of epochs")
 
     args = parser.parse_args()
-    print(args.name)
     name = '.'.join([args.data, args.model])
 
     da = {}
