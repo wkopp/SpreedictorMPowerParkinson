@@ -2,5 +2,6 @@
 /notebook/.ipynb_checkpoints
 /code/.idea
 /code/R/.Rproj.user
+.Rproj.user
 */[0-9]*/
 *.pkl
