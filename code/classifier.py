@@ -1,6 +1,7 @@
 from datamanagement.datasets import dataset
 from modeldefs import modeldefs
 import logging
+import itertools
 import tensorflow as tf
 from keras.backend.tensorflow_backend import set_session
 config = tf.ConfigProto()
@@ -19,7 +20,7 @@ import sys
 
 outputdir = os.getenv('PARKINSON_DREAM_DATA')
 
-def generate_data(dataset, indices, batchsize, augment = True):
+def generate_data(dataset, indices, sample_weights, batchsize, augment = True):
     while 1:
         #create a dict
         ib = 0
@@ -34,12 +35,15 @@ def generate_data(dataset, indices, batchsize, augment = True):
                 
             yinput = dataset['input_1'].labels[
                     indices[ib*batchsize:(ib+1)*batchsize]]
+
+            sw = sample_weights[indices[ib*batchsize:(ib+1)*batchsize]]
+
             ib += 1
 
             if yinput.shape[0] <=0:
                 raise Exception("generator produced empty batch")
-            yield Xinput, yinput
-        
+            yield Xinput, yinput, sw
+
 #logdir = os.getenv('PARKINSON_LOG_DIR')
 
 class Classifier(object):
@@ -64,14 +68,15 @@ class Classifier(object):
         self.data = datadict
         self.batchsize = 100
         #try to use a block instead of random datapoints
-        
+
         hcode = datadict['input_1'].healthCode
 
         # determine sample weights
 
-        hcdf = pd.DataFrame(hcode, columns="healthCode")
+        hcdf = pd.DataFrame(hcode, columns=["healthCode"])
         hcvc = hcdf['healthCode'].value_counts()
         hcdf["nsamples"] = hcdf['healthCode'].map(lambda r: hcvc[r])
+        self.sample_weights = 1./hcdf["nsamples"].values
 
         test_fraction = 0.3
         val_fraction = 0.1
@@ -80,14 +85,14 @@ class Classifier(object):
         # first select training and test participants
         individuals = np.asarray(list(set(hcode)))
 
-        test_individuals = np.random.choice(individuals, 
-                size=int(test_fraction*len(individuals)), 
+        test_individuals = np.random.choice(individuals,
+                size=int(test_fraction*len(individuals)),
                 replace=False)
 
         train_individuals = set(individuals) - set(test_individuals)
 
-        val_individuals = np.random.choice(np.array(list(train_individuals)), 
-                size=int(val_fraction*len(train_individuals)), 
+        val_individuals = np.random.choice(np.array(list(train_individuals)),
+                size=int(val_fraction*len(train_individuals)),
                 replace=False)
 
         train_individuals = train_individuals - set(val_individuals)
@@ -106,7 +111,7 @@ class Classifier(object):
                     num_nonpd += 1
                     nex_nonpd += len(samples)
             return idxs, num_pd, num_nonpd, nex_pd, nex_nonpd
-        
+
         self.test_idxs, test_num_pd, test_num_nonpd, \
             test_nex_pd, test_nex_nonpd = individualStatistics(test_individuals)
         self.train_idxs, train_num_pd, train_num_nonpd, \
@@ -147,10 +152,10 @@ class Classifier(object):
     def defineModel(self):
 
         inputs, outputs = self.modelfct(self.data, self.modelparams)
-        
+
         outputs = Dense(1, activation='sigmoid', name="main_output")(outputs)
         model = Model(inputs = inputs, outputs = outputs)
-        
+
         model.compile(loss='binary_crossentropy',
                     optimizer='adadelta',
                     metrics=['accuracy'])
@@ -162,20 +167,21 @@ class Classifier(object):
     def fit(self):
         self.logger.info("Start training ...")
 
-        train_idx = self.train_idxs[:int(len(self.train_idxs)*.9)]
-        val_idx = self.train_idxs[int(len(self.train_idxs)*.9):]
+        train_idx = self.train_idxs
+        val_idx = self.val_idxs
 
         bs = self.batchsize
 
         history = self.dnn.fit_generator(
-            generate_data(self.data, train_idx, bs),
+            generate_data(self.data, train_idx, self.sample_weights, bs),
             steps_per_epoch = len(train_idx)//bs + \
-                (1 if len(train_idx)%bs > 0 else 0), 
-            epochs = self.epochs, 
-            validation_data = generate_data(self.data, val_idx, bs),
+                (1 if len(train_idx)%bs > 0 else 0),
+            epochs = self.epochs,
+            validation_data = generate_data(self.data, val_idx,
+                self.sample_weights, bs),
             validation_steps = len(val_idx)//bs + \
-                (1 if len(val_idx)%bs > 0 else 0), 
-            use_multiprocessing = False)
+                (1 if len(val_idx)%bs > 0 else 0),
+            use_multiprocessing = True)
 
         self.logger.info("Performance after {} epochs: loss {:1.3f}, val-loss {:1.3f}, acc {:1.3f}, val-acc {:1.3f}".format(self.epochs,
                 history.history["loss"][-1],
@@ -201,20 +207,30 @@ class Classifier(object):
         # determine
 
         yinput = self.data['input_1'].labels
-        y = yinput[self.test_idxs]
-        
-        rest = 1 if len(self.test_idxs)%self.batchsize > 0 else 0
-        scores = self.dnn.predict_generator(generate_data(self.data, 
-            self.test_idxs, self.batchsize, False), 
-            steps = len(self.test_idxs)//self.batchsize + rest)
 
-        auc = metrics.roc_auc_score(y, scores)
-        prc = metrics.average_precision_score(y, scores)
-        f1score = metrics.f1_score(y, scores.round())
-        acc = metrics.accuracy_score(y, scores.round())
-        dname, mname = self.name.split('.')
-        perf = pd.DataFrame([[dname, mname,auc,prc,f1score, acc]], 
-            columns=["dataset", "model", "auROC", "auPRC", "F1", "Accuracy"])
+        results = list(self.name.split('.'))
+
+        for idxs, name in zip([self.test_idxs, self.train_idxs], \
+                ['test', 'train']):
+            y = yinput[idxs]
+
+            rest = 1 if len(idxs)%self.batchsize > 0 else 0
+            scores = self.dnn.predict_generator(generate_data(self.data,
+                idxs, self.sample_weights, self.batchsize, False),
+                steps = len(idxs)//self.batchsize + rest)
+
+            auc = metrics.roc_auc_score(y, scores)
+            prc = metrics.average_precision_score(y, scores)
+            f1score = metrics.f1_score(y, scores.round())
+            acc = metrics.accuracy_score(y, scores.round())
+
+            results += [auc, prc, f1score, acc]
+
+
+        perf = pd.DataFrame([results],
+            columns=["dataset", "model"] +
+            list(itertools.product(['test', 'train'],
+                ["auROC", "auPRC", "F1", "Accuracy"])))
 
         summary_path = os.path.join(outputdir, "perf_summary")
         if not os.path.exists(summary_path):
@@ -222,7 +238,7 @@ class Classifier(object):
         perf.to_csv(os.path.join(summary_path, self.name + ".csv"),
             header = False, index = False, sep = "\t")
         self.logger.info("Results written to {}".format(self.name + ".csv"))
-        
+
 if __name__ == "__main__":
 
     import argparse
@@ -244,7 +260,7 @@ if __name__ == "__main__":
     parser.add_argument('data', choices = [ k for k in dataset],
             help = "Selection of Datasets:" + helpstr)
     parser.add_argument('--name', dest="name", default="", help = "Name-tag")
-    parser.add_argument('--epochs', dest="epochs", type=int, 
+    parser.add_argument('--epochs', dest="epochs", type=int,
             default=30, help = "Number of epochs")
 
     args = parser.parse_args()
@@ -253,7 +269,7 @@ if __name__ == "__main__":
     da = {}
     for k in dataset[args.data].keys():
         da[k] = dataset[args.data][k]()
-    model = Classifier(da, 
+    model = Classifier(da,
             modeldefs[args.model], name=name,
                         epochs = args.epochs)
     model.fit()
