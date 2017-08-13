@@ -26,7 +26,7 @@ def model_conv_glob(data, paramdims):
         {} x {}, relu
         GlobPool
     '''
-    input = Input(shape=data['input_1'].getShape(), name='input_1')
+    input = Input(shape=data['input_1'].shape, name='input_1')
     layer = Conv1D(paramdims[0], kernel_size=(paramdims[1]), activation = 'relu')(input)
     output = GlobalAveragePooling1D()(layer)
     return input, output
@@ -39,7 +39,7 @@ def model_conv_2l_glob(data, paramdims):
         {} x
         GlobPool
     '''
-    input = Input(shape=data['input_1'].getShape(), name='input_1')
+    input = Input(shape=data['input_1'].shape, name='input_1')
     layer = Conv1D(paramdims[0], kernel_size=(paramdims[1]), activation = 'relu')(input)
     output = GlobalAveragePooling1D()(layer)
     return input, output
@@ -51,7 +51,7 @@ def model_lstm(data, paramdims):
         {}, relu
         GlobPool
     '''
-    input = Input(shape=data['input_1'].getShape(), name='input_1')
+    input = Input(shape=data['input_1'].shape, name='input_1')
     layer = LSTM(paramdims[0], return_sequences = True)(input)
     #layer = Conv1D(paramdims[0], kernel_size=(paramdims[1]), activation = 'relu')(input)
     output = GlobalAveragePooling1D()(layer)

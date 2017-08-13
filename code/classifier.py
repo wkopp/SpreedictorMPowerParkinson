@@ -32,7 +32,7 @@ def generate_data(dataset, indices, batchsize, augment = True):
                 Xinput[ipname] = dataset[ipname].getData(augment)[
                     indices[ib*batchsize:(ib+1)*batchsize]]
                 
-            yinput = dataset['input_1'].getLabels()[
+            yinput = dataset['input_1'].labels[
                     indices[ib*batchsize:(ib+1)*batchsize]]
             ib += 1
 
@@ -63,55 +63,81 @@ class Classifier(object):
         self.name = name
         self.data = datadict
         self.batchsize = 100
-        self.Ndatapoints = datadict['input_1'].getNdatapoints()
         #try to use a block instead of random datapoints
         
-        hcode = datadict['input_1'].getHealthCode()
+        hcode = datadict['input_1'].healthCode
+
+        # determine sample weights
+
+        hcdf = pd.DataFrame(hcode, columns="healthCode")
+        hcvc = hcdf['healthCode'].value_counts()
+        hcdf["nsamples"] = hcdf['healthCode'].map(lambda r: hcvc[r])
 
         test_fraction = 0.3
+        val_fraction = 0.1
 
         # split the dataset by participants
         # first select training and test participants
         individuals = np.asarray(list(set(hcode)))
+
         test_individuals = np.random.choice(individuals, 
                 size=int(test_fraction*len(individuals)), 
                 replace=False)
+
         train_individuals = set(individuals) - set(test_individuals)
 
-        # then retrieve the associated samples for the participants
-        #permidxs = np.arange(int(0.3*self.Ndatapoints), self.Ndatapoints)
-        #np.random.shuffle(permidxs)
-        #idxs = np.zeros((self.Ndatapoints), dtype=bool)
-        self.test_idxs = []
-        for indiv in test_individuals:
-            self.test_idxs += list(np.where(hcode == indiv)[0])
+        val_individuals = np.random.choice(np.array(list(train_individuals)), 
+                size=int(val_fraction*len(train_individuals)), 
+                replace=False)
+
+        train_individuals = train_individuals - set(val_individuals)
+
+        # next, obtain the examples for each participant
+        def individualStatistics(individ):
+            idxs = []
+            num_pd = num_nonpd = nex_pd = nex_nonpd = 0
+            for indiv in individ:
+                samples = np.where(hcode == indiv)[0]
+                idxs += list(samples)
+                if datadict['input_1'].labels[samples[0]] == 1:
+                    num_pd += 1
+                    nex_pd += len(samples)
+                else:
+                    num_nonpd += 1
+                    nex_nonpd += len(samples)
+            return idxs, num_pd, num_nonpd, nex_pd, nex_nonpd
         
-        self.train_idxs = []
-        for indiv in train_individuals:
-            self.train_idxs += list(np.where(hcode == indiv)[0])
+        self.test_idxs, test_num_pd, test_num_nonpd, \
+            test_nex_pd, test_nex_nonpd = individualStatistics(test_individuals)
+        self.train_idxs, train_num_pd, train_num_nonpd, \
+            train_nex_pd, train_nex_nonpd = individualStatistics(train_individuals)
+        self.val_idxs, val_num_pd, val_num_nonpd, \
+            val_nex_pd, val_nex_nonpd = individualStatistics(val_individuals)
 
-#        np.random.shuffle(self.train_idxs)
-#        permidxs =  np.arange(self.Ndatapoints)
-#        np.random.shuffle(permidxs)
-#        self.test_idxs = permidxs[:int(0.3*self.Ndatapoints)]
-#        self.train_idxs = permidxs[int(0.3*self.Ndatapoints):]
 
-        self.logger.info("Number of training participants: {}".format(len(train_individuals)))
-        self.logger.info("Number of test participants: {}".format(len(test_individuals)))
-        self.logger.info("Total number of examples: {}".format(self.Ndatapoints))
-        self.logger.info("Number of training examples: {}".format(len(self.train_idxs)))
-        self.logger.info("Number of test examples: {}".format(len(self.test_idxs)))
+        self.logger.info("Basic statistics about the dataset (All/PD/Non-PD):")
+        self.logger.info("Total number of participants: {}".format(
+                len(individuals)))
+        self.logger.info("Number of training participants: {}/{}/{}".format(
+                len(train_individuals), train_num_pd, train_num_nonpd))
+        self.logger.info("Number of test participants: {}/{}/{}".format(
+                len(test_individuals), test_num_pd, test_num_nonpd))
+        self.logger.info("Number of validation participants: {}/{}/{}".format(
+                len(val_individuals), val_num_pd, val_num_nonpd))
+
+        self.logger.info("Total number of exercises: {}".format(
+                len(datadict['input_1'])))
+        self.logger.info("Number of training exercises: {}/{}/{}".format(
+                len(self.train_idxs), train_nex_pd, train_nex_nonpd))
+        self.logger.info("Number of test exercises: {}/{}/{}".format(
+                len(self.test_idxs), test_nex_pd, test_nex_nonpd))
+        self.logger.info("Number of validation exercises: {}/{}/{}".format(
+                len(self.val_idxs), val_nex_pd, val_nex_nonpd))
 
         self.logger.info("Input dimensions:")
         for k in datadict:
-            self.logger.info("\t{}: {} x {}".format(k, datadict[k].getNdatapoints(),
-                                    datadict[k].getShape()))
-
-        #self.logger.info("Output dimension:")
-            #self.logger.info("\t{}: {}".format(k, 
-        #self.train_idxs = permidxs#[int(0.3*self.Ndatapoints):]
-        #self.test_idxs = permidxs[:int(0.3*self.Ndatapoints)]
-        #self.test_idxs = range(int(0.3*self.Ndatapoints))
+            self.logger.info("\t{}: {} x {}".format(k, len(datadict[k]),
+                                    datadict[k].shape))
 
         self.modelfct = model_definition[0]
         self.modelparams = model_definition[1]
@@ -174,7 +200,7 @@ class Classifier(object):
     def evaluate(self):
         # determine
 
-        yinput = self.data['input_1'].getLabels()
+        yinput = self.data['input_1'].labels
         y = yinput[self.test_idxs]
         
         rest = 1 if len(self.test_idxs)%self.batchsize > 0 else 0
