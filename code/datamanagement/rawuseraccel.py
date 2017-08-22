@@ -6,6 +6,8 @@ import pandas as pd
 import numpy as np
 from numpydataset import NumpyDataset
 
+from utils import batchRandomRotation
+
 datadir = os.getenv('PARKINSON_DREAM_DATA')
 
 class RawUserAccel(NumpyDataset):
@@ -24,6 +26,9 @@ class RawUserAccel(NumpyDataset):
         shift = M.mean(axis=0)
         M -= shift
         return M
+    
+    def transformData(self, data):
+        return batchRandomRotation(data)
 
 class RawUserAccelOutbound(RawUserAccel):
     '''

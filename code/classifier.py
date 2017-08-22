@@ -30,9 +30,9 @@ def generate_data(dataset, indices, sample_weights, batchsize, augment = True):
         while ib < (len(indices)//batchsize + (1 if len(indices)%batchsize > 0 else 0)):
             Xinput = {}
             for ipname in dataset.keys():
-                Xinput[ipname] = dataset[ipname].getData(augment)[
-                    indices[ib*batchsize:(ib+1)*batchsize]]
-                
+                Xinput[ipname] = dataset[ipname].getData(
+                    indices[ib*batchsize:(ib+1)*batchsize], augment)
+
             yinput = dataset['input_1'].labels[
                     indices[ib*batchsize:(ib+1)*batchsize]]
 
@@ -164,7 +164,7 @@ class Classifier(object):
         model.summary(print_fn = self.logger.info)
         return model
 
-    def fit(self):
+    def fit(self, augment = True):
         self.logger.info("Start training ...")
 
         train_idx = self.train_idxs
@@ -173,12 +173,13 @@ class Classifier(object):
         bs = self.batchsize
 
         history = self.dnn.fit_generator(
-            generate_data(self.data, train_idx, self.sample_weights, bs),
+            generate_data(self.data, train_idx, self.sample_weights, bs,
+                    augment),
             steps_per_epoch = len(train_idx)//bs + \
                 (1 if len(train_idx)%bs > 0 else 0),
             epochs = self.epochs,
             validation_data = generate_data(self.data, val_idx,
-                self.sample_weights, bs),
+                self.sample_weights, bs, augment = False),
             validation_steps = len(val_idx)//bs + \
                 (1 if len(val_idx)%bs > 0 else 0),
             use_multiprocessing = True)
@@ -262,9 +263,13 @@ if __name__ == "__main__":
     parser.add_argument('--name', dest="name", default="", help = "Name-tag")
     parser.add_argument('--epochs', dest="epochs", type=int,
             default=30, help = "Number of epochs")
+    parser.add_argument('--augment', dest="augment", type=bool,
+            default=True, help = "Use data augmentation if available")
 
     args = parser.parse_args()
     name = '.'.join([args.data, args.model])
+    if args.augment:
+        name = '.'.join([name, "aug"])
 
     da = {}
     for k in dataset[args.data].keys():
@@ -272,6 +277,6 @@ if __name__ == "__main__":
     model = Classifier(da,
             modeldefs[args.model], name=name,
                         epochs = args.epochs)
-    model.fit()
+    model.fit(args.augment)
     model.saveModel()
     model.evaluate()

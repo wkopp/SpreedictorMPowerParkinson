@@ -42,11 +42,16 @@ class NumpyDataset(object):
 
         self.data, self.labels, self.keepind = joblib.load(self.npcachefile)
 
-    def getData(self, transform = False):
-        if transform:
-            return self.transformData(self.data)
+    def getData(self, idx = None, transform = False):
+        if type(idx) == type(None):
+            data = self.data
         else:
-            return self.data
+            data = self.data[idx]
+
+        if transform:
+            return self.transformData(data)
+        else:
+            return data
 
     @property
     def healthCode(self):

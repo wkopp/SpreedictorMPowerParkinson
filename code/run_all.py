@@ -12,10 +12,16 @@ from argparse import RawTextHelpFormatter
 parser = argparse.ArgumentParser(description = \
         'Run all (or selection) of parkinson`s disease prediciton models.', formatter_class = \
         RawTextHelpFormatter)
-parser.add_argument('--d', dest='datafilter', nargs = '*', default = [''],
+parser.add_argument('-df', dest='datafilter', nargs = '*', default = [''],
         help = "Filter for datasets")
-parser.add_argument('--m', dest="modelfilter", nargs = '*', 
+parser.add_argument('-mf', dest="modelfilter", nargs = '*',
         default = [''], help = "Filter for model definitions")
+
+parser.add_argument('--epochs', dest="epochs", type=int,
+        default = 30, help = "Number of epochs")
+
+parser.add_argument('--augment', dest="augment", type=bool,
+        default=True, help = "Use data augmentation if available")
 
 args = parser.parse_args()
 print(args.datafilter)
@@ -26,7 +32,7 @@ import re
 all_combinations = list(itertools.product(dataset, modeldefs))
 
 for comb in all_combinations:
-    
+
     x  = [ type(re.search(d, comb[0])) != type(None) for d in args.datafilter]
     if not np.any(x):
         continue
@@ -40,13 +46,15 @@ for comb in all_combinations:
     print("Running {}-{}".format(comb[0],comb[1]))
     name = '.'.join(comb)
     print(name)
+    if args.augment:
+        name = '.'.join([name, "aug"])
 
     da = {}
     for k in dataset[comb[0]].keys():
         da[k] = dataset[comb[0]][k]()
 
-    model = Classifier(da, modeldefs[comb[1]], name=name, epochs = 30)
+    model = Classifier(da, modeldefs[comb[1]], name=name, epochs = args.epochs)
 
-    model.fit()
+    model.fit(args.augment)
     model.saveModel()
     model.evaluate()
