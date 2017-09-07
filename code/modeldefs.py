@@ -3,6 +3,7 @@ from keras.layers.recurrent import LSTM
 from keras.layers.convolutional import Conv1D
 from keras.layers.pooling import GlobalAveragePooling1D
 from keras.layers.pooling import AveragePooling1D, MaxPooling1D
+from keras.layers.normalization import BatchNormalization
 from functools import wraps
 
 

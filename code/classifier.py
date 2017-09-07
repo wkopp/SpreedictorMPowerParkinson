@@ -263,13 +263,14 @@ if __name__ == "__main__":
     parser.add_argument('--name', dest="name", default="", help = "Name-tag")
     parser.add_argument('--epochs', dest="epochs", type=int,
             default=30, help = "Number of epochs")
-    parser.add_argument('--augment', dest="augment", type=bool,
-            default=True, help = "Use data augmentation if available")
+    parser.add_argument('--augment', dest="augment",
+            default=False, action='store_true', help = "Use data augmentation if available")
 
     args = parser.parse_args()
     name = '.'.join([args.data, args.model])
+    print("--augment {}".args.augment)
     if args.augment:
-        name = '.'.join([name, "aug"])
+        name = '_'.join([name, "aug"])
 
     da = {}
     for k in dataset[args.data].keys():
