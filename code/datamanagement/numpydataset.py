@@ -18,10 +18,10 @@ class NumpyDataset(object):
             nrows = activity.getCommonDescriptor().shape[0]
             data = np.zeros((nrows, 2000, len(self.columns)), dtype="float32")
             keepind = np.ones((nrows), dtype=bool)
-            
+
             for idx in range(nrows):
                 df = activity.getEntryByIndex(idx, modality, variant)
-                
+
                 if df.empty:
                     keepind[idx] = False
                     continue
@@ -33,11 +33,11 @@ class NumpyDataset(object):
                 data[idx, :df.shape[0], :] = df
 
             data = data[keepind]
-            
+
             labels = activity.getCommonDescriptor()["professional-diagnosis"].apply(
                 lambda x: 1 if x==True else 0)
             labels = labels[keepind]
-            
+
             joblib.dump((data, labels, keepind), self.npcachefile)
 
         self.data, self.labels, self.keepind = joblib.load(self.npcachefile)
@@ -53,12 +53,15 @@ class NumpyDataset(object):
         else:
             return data
 
+    def transformData(data):
+        return data + np.random.randn(data.shape)*np.sqrt(0.1)
+
     @property
     def healthCode(self):
         activity = WalkingActivity()
         annotation = activity.getCommonDescriptor().iloc[self.keepind]
         return annotation["healthCode"].values
-        
+
     def transformData(self, data):
         return data
 

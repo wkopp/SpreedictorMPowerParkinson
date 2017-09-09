@@ -11,9 +11,9 @@ from utils import batchRandomRotation
 datadir = os.getenv('PARKINSON_DREAM_DATA')
 
 class RawUserAccel(NumpyDataset):
-    
+
     def __init__(self, variant, reload_ = False):
-        self.npcachefile = os.path.join(datadir, 
+        self.npcachefile = os.path.join(datadir,
                 "rawuseraccel_{}.pkl".format(variant))
 
         self.columns = list(itertools.product(["userAcceleration"], \
@@ -26,9 +26,9 @@ class RawUserAccel(NumpyDataset):
         shift = M.mean(axis=0)
         M -= shift
         return M
-    
-    def transformData(self, data):
-        return batchRandomRotation(data)
+
+#    def transformData(self, data):
+#        return batchRandomRotation(data)
 
 class RawUserAccelOutbound(RawUserAccel):
     '''

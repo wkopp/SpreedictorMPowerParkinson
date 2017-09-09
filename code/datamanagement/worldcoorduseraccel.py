@@ -32,8 +32,8 @@ class WorldCoordUserAccel(NumpyDataset):
         return np.asarray([ quaternion.quat_mult(tuple(Q[x,:]), M[x,:]) \
                 for x in range(M.shape[0])])
 
-    def transformData(self, data):
-        return batchRandomRotation(data)
+#    def transformData(self, data):
+#        return batchRandomRotation(data)
 
 class WorldCoordUserAccelOutbound(WorldCoordUserAccel):
     '''
