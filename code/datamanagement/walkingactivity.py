@@ -47,7 +47,7 @@ class WalkingActivity(object):
 
         df = results.asDataFrame()
 
-        df[["createdOn"]] = df[["createdOn"]].apply(pd.to_datetime)
+        df[["createdOn"]] = df[["createdOn"]].apply(lambda x: pd.to_datetime(x, unit='ms'))
         df.fillna(value=-1, inplace=True)
         df[df.columns[5:-1]] = df[df.columns[5:-1]].astype("int64")
 
