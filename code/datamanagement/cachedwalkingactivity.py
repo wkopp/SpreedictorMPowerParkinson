@@ -1,12 +1,6 @@
-import synapseclient
-import pandas as pd
-import numpy as np
 import os
 import joblib
-from demographics import Demographics
-from walkingactivity import WalkingActivity
-import itertools
-import quaternion
+from .walkingactivity import WalkingActivity
 
 datadir = os.getenv('PARKINSON_DREAM_DATA')
 

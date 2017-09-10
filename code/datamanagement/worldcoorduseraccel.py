@@ -4,8 +4,8 @@ import itertools
 import synapseclient
 import pandas as pd
 import numpy as np
-from numpydataset import NumpyDataset
-import quaternion
+from .numpydataset import NumpyDataset
+import datamanagement.quaternion as quaternion
 
 datadir = os.getenv('PARKINSON_DREAM_DATA')
 class WorldCoordUserAccel(NumpyDataset):

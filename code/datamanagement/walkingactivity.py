@@ -3,9 +3,9 @@ import pandas as pd
 import numpy as np
 import os
 import joblib
-from demographics import Demographics
+from .demographics import Demographics
 import itertools
-import quaternion
+import datamanagement.quaternion as quaternion
 
 datadir = os.getenv('PARKINSON_DREAM_DATA')
 
@@ -161,7 +161,7 @@ class WalkingActivity(object):
             ts_lengths[:] = np.nan
 
             for i_col, (modality, variant) in enumerate(self.modality_variants_timeseries):
-                print modality, variant
+                print(modality, variant)
 
                 for i_row in range(n_timeseries):
                     ts = self.getEntryByIndex(i_row, modality=modality, variant=variant)

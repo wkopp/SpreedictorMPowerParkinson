@@ -33,10 +33,10 @@ if __name__ == '__main__':
     v= v.reshape((3,1))
 
     v = quat_mult(q,v)
-    print v
+    print(v)
 
     v = quat_mult(q,v)
-    print v
+    print(v)
 
     v = quat_mult(q,v)
-    print v
+    print(v)

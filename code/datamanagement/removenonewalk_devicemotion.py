@@ -4,7 +4,7 @@ import itertools
 import synapseclient
 import pandas as pd
 import numpy as np
-from numpydataset import NumpyDataset
+from .numpydataset import NumpyDataset
 
 datadir = os.getenv('PARKINSON_DREAM_DATA')
 

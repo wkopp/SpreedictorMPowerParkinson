@@ -1,13 +1,13 @@
-from rawuseraccel import *
+from .rawuseraccel import *
 #from rawrotationrate import  RawRotationRateRest, RawRotationRateReturn, RawRotationRateOutbound
-from rawrotationrate import *
-from rawgravity import *
-from rawdevicemotion import *
-from nony_devicemotion import *
-from removenonewalk_devicemotion import *
-from svduseraccel import *
-from svdrotationrate import *
-from worldcoorduseraccel import *
+from .rawrotationrate import *
+from .rawgravity import *
+from .rawdevicemotion import *
+from .nony_devicemotion import *
+from .removenonewalk_devicemotion import *
+from .svduseraccel import *
+from .svdrotationrate import *
+from .worldcoorduseraccel import *
 
 dataset = {
         #Raw userAccel

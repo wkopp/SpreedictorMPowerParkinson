@@ -4,7 +4,7 @@ import itertools
 import synapseclient
 import pandas as pd
 import numpy as np
-from cachedwalkingactivity import CachedWalkingActivity as WalkingActivity
+from .cachedwalkingactivity import CachedWalkingActivity as WalkingActivity
 
 
 class NumpyDataset(object):
