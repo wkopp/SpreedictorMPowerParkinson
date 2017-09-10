@@ -34,7 +34,6 @@ class NumpyDataset(object):
 
             data = data[keepind]
             
-            
             labels = activity.getCommonDescriptor()["professional-diagnosis"].apply(
                 lambda x: 1 if x==True else 0)
             labels = labels[keepind]
@@ -49,7 +48,8 @@ class NumpyDataset(object):
         else:
             return self.data
 
-    def getHealthCode(self):
+    @property
+    def healthCode(self):
         activity = WalkingActivity()
         annotation = activity.getCommonDescriptor().iloc[self.keepind]
         return annotation["healthCode"].values
@@ -57,11 +57,17 @@ class NumpyDataset(object):
     def transformData(self, data):
         return data
 
-    def getLabels(self):
-        return self.labels.values
+    @property
+    def labels(self):
+        return self.lab.values
 
-    def getShape(self):
+    @labels.setter
+    def labels(self, lab):
+        self.lab = lab
+
+    @property
+    def shape(self):
         return self.data.shape[1:]
 
-    def getNdatapoints(self):
+    def __len__(self):
         return self.data.shape[0]
