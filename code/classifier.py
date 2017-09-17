@@ -81,6 +81,8 @@ class Classifier(object):
         test_fraction = 0.3
         val_fraction = 0.1
 
+        np.random.seed(1234)
+
         # split the dataset by participants
         # first select training and test participants
         individuals = np.asarray(list(set(hcode)))
@@ -268,16 +270,18 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
     name = '.'.join([args.data, args.model])
-    print("--augment {}".args.augment)
+    print("--augment {}".format(args.augment))
     if args.augment:
-        name = '_'.join([name, "aug"])
+        name = '_'.join([name, "rot"])
 
     da = {}
     for k in dataset[args.data].keys():
         da[k] = dataset[args.data][k]()
+
     model = Classifier(da,
             modeldefs[args.model], name=name,
                         epochs = args.epochs)
+
     model.fit(args.augment)
     model.saveModel()
     model.evaluate()
