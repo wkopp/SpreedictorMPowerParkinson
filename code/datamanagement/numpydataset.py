@@ -6,6 +6,7 @@ import pandas as pd
 import numpy as np
 from cachedwalkingactivity import CachedWalkingActivity as WalkingActivity
 
+from utils import batchRandomRotation
 
 class NumpyDataset(object):
     def __init__(self, modality, variant, reload_ = False):
@@ -53,8 +54,17 @@ class NumpyDataset(object):
         else:
             return data
 
-    def transformData(data):
-        return data + np.random.randn(data.shape)*np.sqrt(0.1)
+    def transformDataNoise(self, data):
+        return data + np.random.normal(scale=np.sqrt(0.1), size=data.shape)
+
+    def transformDataRotate(self, data):
+        return batchRandomRotation(data)
+
+    def transformDataFlipSign(self, data):
+        for t in range(data.shape[0]):
+            data[t] = np.matmul(data[t], np.diag(np.random.choice([1,-1], 3)))
+
+        return data
 
     @property
     def healthCode(self):
@@ -62,8 +72,8 @@ class NumpyDataset(object):
         annotation = activity.getCommonDescriptor().iloc[self.keepind]
         return annotation["healthCode"].values
 
-    def transformData(self, data):
-        return data
+    #def transformData(self, data):
+        #return data
 
     @property
     def labels(self):
