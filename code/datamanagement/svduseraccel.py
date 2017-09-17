@@ -10,7 +10,7 @@ datadir = os.getenv('PARKINSON_DREAM_DATA')
 
 class SvdUserAccel(NumpyDataset):
     def __init__(self, variant, reload_ = False):
-        self.npcachefile = os.path.join(datadir, 
+        self.npcachefile = os.path.join(datadir,
                 "svduseraccel_{}.pkl".format(variant))
 
         self.columns = list(itertools.product(["userAcceleration"], \
@@ -24,6 +24,9 @@ class SvdUserAccel(NumpyDataset):
         M -= shift
         U, s, V = np.linalg.svd(M, full_matrices = 0)
         return np.dot(U,np.diag(s))
+
+#    def transformData(self, data):
+#        return batchRandomRotation(data)
 
 class SvdUserAccelOutbound(SvdUserAccel):
     '''

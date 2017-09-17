@@ -4,13 +4,13 @@ import itertools
 import synapseclient
 import pandas as pd
 import numpy as np
-from .numpydataset import NumpyDataset
-import datamanagement.quaternion as quaternion
+from numpydataset import NumpyDataset
+import quaternion
 
 from utils import batchRandomRotation
 
 datadir = os.getenv('PARKINSON_DREAM_DATA')
-class WorldCoordUserAccel(NumpyDataset):
+class WorldCoordNYRNWUserAccel(NumpyDataset):
 
     def __init__(self, variant, reload_ = False):
         self.npcachefile = os.path.join(datadir,
@@ -21,6 +21,20 @@ class WorldCoordUserAccel(NumpyDataset):
         NumpyDataset.__init__(self, "deviceMotion", variant, reload_)
 
     def getValues(self, df):
+        df["score"] = df["userAcceleration_x"]**2 + \
+            df["userAcceleration_y"]**2 + df["userAcceleration_z"]**2
+
+        # take the threshold to be the extreme outliers
+        threshold = (df.score.quantile(.75)- \
+                df.score.quantile(.25))*2 + df.score.quantile(.75)
+
+        idx = np.where(df.score >= threshold)[0]
+
+        if len(idx)>0:
+            df = df.iloc[idx[0]:idx[-1]]
+
+        df = df[(df.gravity_y>0.6) | (df.gravity_y<-0.6)]
+
         M = df[[ "_".join(el) for \
             el in self.columns]].values
         col = list(itertools.product(['attitude'], ["x","y","z", 'w']))
@@ -35,23 +49,23 @@ class WorldCoordUserAccel(NumpyDataset):
 #    def transformData(self, data):
 #        return batchRandomRotation(data)
 
-class WorldCoordUserAccelOutbound(WorldCoordUserAccel):
+class WorldCoordNYRNWUserAccelOutbound(WorldCoordNYRNWUserAccel):
     '''
-    WorldCoord userAcceleration data for outbound walk
+    WorldCoordNYRNW userAcceleration data for outbound walk
     '''
     def __init__(self, reload_ = False):
-        WorldCoordUserAccel.__init__(self, "outbound", reload_)
+        WorldCoordNYRNWUserAccel.__init__(self, "outbound", reload_)
 
-class WorldCoordUserAccelRest(WorldCoordUserAccel):
+class WorldCoordNYRNWUserAccelRest(WorldCoordNYRNWUserAccel):
     '''
-    WorldCoord userAcceleration data for rest phase
+    WorldCoordNYRNW userAcceleration data for rest phase
     '''
     def __init__(self, reload_ = False):
-        WorldCoordUserAccel.__init__(self, "rest", reload_)
+        WorldCoordNYRNWUserAccel.__init__(self, "rest", reload_)
 
-class WorldCoordUserAccelReturn(WorldCoordUserAccel):
+class WorldCoordNYRNWUserAccelReturn(WorldCoordNYRNWUserAccel):
     '''
-    WorldCoord userAcceleration data for return walk
+    WorldCoordNYRNW userAcceleration data for return walk
     '''
     def __init__(self, reload_ = False):
-        WorldCoordUserAccel.__init__(self, "return", reload_)
+        WorldCoordNYRNWUserAccel.__init__(self, "return", reload_)
