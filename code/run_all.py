@@ -20,8 +20,14 @@ parser.add_argument('-mf', dest="modelfilter", nargs = '*',
 parser.add_argument('--epochs', dest="epochs", type=int,
         default = 30, help = "Number of epochs")
 
-parser.add_argument('--augment', dest="augment", action='store_true',
-        default=False, help = "Use data augmentation if available")
+parser.add_argument('--noise', dest="noise", action='store_true',
+        default=False, help = "Augment with gaussian noise")
+
+parser.add_argument('--rotate', dest="rotate", action='store_true',
+        default=False, help = "Augment with random rotations")
+
+parser.add_argument('--flip', dest="flip", action='store_true',
+        default=False, help = "Augment by flipping the sign")
 
 args = parser.parse_args()
 print(args.datafilter)
@@ -45,17 +51,32 @@ for comb in all_combinations:
 
     print("Running {}-{}".format(comb[0],comb[1]))
     name = '.'.join(comb)
-    print("--augment {}".format(args.augment))
-    if args.augment:
+    print("--noise {}".format(args.noise))
+
+    if args.noise:
         name = '_'.join([name, "aug"])
+    print(name)
+    print("--rotate {}".format(args.rotate))
+    if args.rotate:
+        name = '_'.join([name, "rot"])
+    print(name)
+    print("--flip {}".format(args.flip))
+    if args.flip:
+        name = '_'.join([name, "flip"])
     print(name)
 
     da = {}
     for k in dataset[comb[0]].keys():
         da[k] = dataset[comb[0]][k]()
+        if args.noise:
+            da[k].transformData = da[k].transformDataNoise
+        if args.rotate:
+            da[k].transformData = da[k].transformDataRotate
+        if args.flip:
+            da[k].transformData = da[k].transformDataFlipSign
 
     model = Classifier(da, modeldefs[comb[1]], name=name, epochs = args.epochs)
 
-    model.fit(args.augment)
+    model.fit(args.noise|args.rotate|args.flip)
     model.saveModel()
     model.evaluate()
