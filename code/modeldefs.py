@@ -60,8 +60,11 @@ def model_conv_2l_glob(data, paramdims):
     input = Input(shape=data['input_1'].shape, name='input_1')
     layer = Conv1D(paramdims[0], kernel_size=(paramdims[1]),
             activation = 'relu')(input)
+
     layer = BatchNormalization()(layer)
+
     layer = MaxPooling1D(pool_size=paramdims[2])(layer)
+
     layer = Conv1D(paramdims[3], kernel_size=(paramdims[4]),
             activation = 'relu')(layer)
     layer = BatchNormalization()(layer)
@@ -80,7 +83,9 @@ def model_gauss_conv_2l_glob(data, paramdims):
     input = Input(shape=data['input_1'].shape, name='input_1')
     layer = Conv1D(paramdims[0], kernel_size=(paramdims[1]),
             activation = 'relu')(input)
+
     layer = GaussianNoise(0.1)(layer)
+
     layer = MaxPooling1D(pool_size=paramdims[2])(layer)
     layer = Conv1D(paramdims[3], kernel_size=(paramdims[4]),
             activation = 'relu')(layer)
@@ -99,7 +104,9 @@ def model_gauss_conv_lstm(data, paramdims):
     input = Input(shape=data['input_1'].shape, name='input_1')
     layer = Conv1D(paramdims[0], kernel_size=(paramdims[1]),
             activation = 'relu')(input)
+
     layer = GaussianNoise(0.1)(layer)
+
     layer = MaxPooling1D(pool_size=paramdims[2])(layer)
     layer = LSTM(paramdims[3], return_sequences=True)(layer)
     output = GlobalAveragePooling1D()(layer)
@@ -128,6 +135,6 @@ modeldefs = { 'conv_30_100': (model_conv_glob, (30,100)),
                 'poolconv_10_30_20': (model_pool_conv_glob, (10,30,20)),
                 'poolconv_10_30_30': (model_pool_conv_glob, (10,30,30)),
                 'conv2l_30_300_10_20_30': (model_conv_2l_glob, (30,300,10,20,30)),
-                'gaussconv2l_30_300_10_20_30': (model_gauss_conv_2l_glob, (30,300,10,20,30)),
-                'gconvlstm_30_300_10_20': (model_gauss_conv_lstm, (30,300,10,20)),
+                'cgc_30_300_10_20_30': (model_gauss_conv_2l_glob, (30,300,10,20,30)),
+                'convlstm_30_300_10_20': (model_gauss_conv_lstm, (30,300,10,20)),
 }
