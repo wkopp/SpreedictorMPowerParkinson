@@ -41,8 +41,8 @@ dataset = {
         'nydmret':{'input_1':NonYDeviceMotionReturn},
 
         #Remove None-Y
-        'nyrnwdmout':{'input_1':NonYRNWDeviceMotionOutbound},
-        'wcnyrnwdmout':{'input_1':WorldCoordNYRNWUserAccelOutbound},
+        'rnwnydmout':{'input_1':NonYRNWDeviceMotionOutbound},
+        'wcnyrnwuaout':{'input_1':WorldCoordNYRNWUserAccelOutbound},
 
         #Remove None-Y
         'nyuaout':{'input_1':NonYUserAccelOutbound},

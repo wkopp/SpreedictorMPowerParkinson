@@ -66,6 +66,12 @@ class NumpyDataset(object):
 
         return data
 
+    def transformDataFlipRotate(self, data):
+        data = self.transformDataRotate(data)
+        data = self.transformDataFlipSign(data)
+
+        return data
+
     @property
     def healthCode(self):
         activity = WalkingActivity()

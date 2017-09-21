@@ -28,6 +28,8 @@ parser.add_argument('--rotate', dest="rotate", action='store_true',
 
 parser.add_argument('--flip', dest="flip", action='store_true',
         default=False, help = "Augment by flipping the sign")
+parser.add_argument('--rofl', dest="rofl", action='store_true',
+        default=False, help = "Augment by flipping the sign and rotating")
 
 args = parser.parse_args()
 print(args.datafilter)
@@ -42,7 +44,6 @@ for comb in all_combinations:
     x  = [ type(re.search(d, comb[0])) != type(None) for d in args.datafilter]
     if not np.any(x):
         continue
-    print(comb)
     x  = [ type(re.search(d, comb[1])) != type(None) for d in args.modelfilter]
     if not np.any(x):
         continue
@@ -51,6 +52,7 @@ for comb in all_combinations:
 
     print("Running {}-{}".format(comb[0],comb[1]))
     name = '.'.join(comb)
+    #continue
     print("--noise {}".format(args.noise))
 
     if args.noise:
@@ -64,6 +66,10 @@ for comb in all_combinations:
     if args.flip:
         name = '_'.join([name, "flip"])
     print(name)
+    print("--rofl {}".format(args.rofl))
+    if args.rofl:
+        name = '_'.join([name, "rofl"])
+    print(name)
 
     da = {}
     for k in dataset[comb[0]].keys():
@@ -74,9 +80,11 @@ for comb in all_combinations:
             da[k].transformData = da[k].transformDataRotate
         if args.flip:
             da[k].transformData = da[k].transformDataFlipSign
+        if args.rofl:
+            da[k].transformData = da[k].transformDataFlipRotate
 
     model = Classifier(da, modeldefs[comb[1]], name=name, epochs = args.epochs)
 
-    model.fit(args.noise|args.rotate|args.flip)
+    model.fit(args.noise|args.rotate|args.flip|args.rofl)
     model.saveModel()
     model.evaluate()

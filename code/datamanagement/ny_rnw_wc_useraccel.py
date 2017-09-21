@@ -14,7 +14,7 @@ class WorldCoordNYRNWUserAccel(NumpyDataset):
 
     def __init__(self, variant, reload_ = False):
         self.npcachefile = os.path.join(datadir,
-                "worldcouseraccel_{}.pkl".format(variant))
+                "worldconyrnw_useraccel_{}.pkl".format(variant))
 
         self.columns = list(itertools.product(["userAcceleration"], \
                     ["x","y","z"]))
