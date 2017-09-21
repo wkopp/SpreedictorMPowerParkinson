@@ -5,6 +5,7 @@ from keras.layers.pooling import GlobalAveragePooling1D
 from keras.layers.pooling import AveragePooling1D, MaxPooling1D
 from keras.layers.normalization import BatchNormalization
 from keras.layers.noise import GaussianNoise
+from keras.layers.core import Dense, Dropout, Flatten, Activation
 from functools import wraps
 
 
@@ -126,6 +127,40 @@ def model_lstm(data, paramdims):
 
     return input, output
 
+@compatibilityCheck(['input_1'])
+def model_ff(data, paramdims):
+    '''
+    FFNN:
+        {} x {}, relu
+        GlobPool
+    '''
+    input = Input(shape=data['input_1'].shape, name='input_1')
+    #layer = Dense(data['input_1'].shape[0]*data['input_1'].shape[1], activation='relu')(input)
+    #layer = Dropout(0.4)(layer)
+    layer = Dense(paramdims[0])(input)
+    #layer = Dropout(0.4)(layer)
+    layer = Dense(paramdims[1])(layer)
+    layer = Dense(2)(layer)
+
+    #output = Activation('sigmoid')
+    #layer = Dropout(0.4)(layer)
+    #output = GlobalAveragePooling1D()(layer)
+    output = Flatten()(layer)
+
+    return input, output
+
+@compatibilityCheck(['input_1'])
+def model_logreg(data, paramdims):
+    '''
+    logistig regresscion:
+        {}
+        Flatten
+    '''
+    input = Input(shape=data['input_1'].shape, name='input_1')
+    output = Flatten()(input)
+
+    return input, output
+	
 modeldefs = { 'conv_30_100': (model_conv_glob, (30,100)),
                 'conv_30_200': (model_conv_glob, (30,200)),
                 'conv_30_300': (model_conv_glob, (30,300)),
@@ -134,7 +169,9 @@ modeldefs = { 'conv_30_100': (model_conv_glob, (30,100)),
                 'poolconv_10_50_20': (model_pool_conv_glob, (10,50,20)),
                 'poolconv_10_30_20': (model_pool_conv_glob, (10,30,20)),
                 'poolconv_10_30_30': (model_pool_conv_glob, (10,30,30)),
-                'conv2l_30_300_10_20_30': (model_conv_2l_glob, (30,300,10,20,30)),
-                'cgc_30_300_10_20_30': (model_gauss_conv_2l_glob, (30,300,10,20,30)),
-                'convlstm_30_300_10_20': (model_gauss_conv_lstm, (30,300,10,20)),
+                #'conv2l_30_300_10_20_30': (model_conv_2l_glob, (30,300,10,20,30)),
+                #'cgc_30_300_10_20_30': (model_gauss_conv_2l_glob, (30,300,10,20,30)),
+                #'convlstm_30_300_10_20': (model_gauss_conv_lstm, (30,300,10,20)),
+                #'ffnn_64' : (model_ff, (64,32)),
+
 }

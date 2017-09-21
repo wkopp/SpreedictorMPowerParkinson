@@ -12,6 +12,13 @@ from .removenonewalk_useraccel import *
 from .svduseraccel import *
 from .svdrotationrate import *
 from .worldcoorduseraccel import *
+from .mtspectrum_svduseraccel import *
+from .filter_lp_rawuseraccel import *
+from .filter_hp_rawuseraccel import *
+from .filter_bp_rawuseraccel import *
+from .filter_lp_rawrotationrate import *
+from .filter_hp_rawrotationrate import *
+from .filter_bp_rawrotationrate import *
 
 dataset = {
         #Raw userAccel
@@ -73,4 +80,37 @@ dataset = {
         'wcuaout':{'input_1':WorldCoordUserAccelOutbound},
         'wcuaret':{'input_1':WorldCoordUserAccelReturn},
         'wcuares':{'input_1':WorldCoordUserAccelRest},
+
+        #MTSpectrum SVD userAccel
+        'mtssvduao' : {'input_1':MtSpectrum_SvdUserAccelOutbound},
+
+        # low pass filtered raw userAccel
+        'flpruaout':{'input_1':FilterLowPassRawUserAccelOutbound},
+        'flpruaret':{'input_1':FilterLowPassRawUserAccelReturn},
+        'flpruares':{'input_1':FilterLowPassRawUserAccelRest},
+
+        # high pass filtered raw userAccel
+        'fhpruaout': {'input_1': FilterHighPassRawUserAccelOutbound},
+        'fhpruaret': {'input_1': FilterHighPassRawUserAccelReturn},
+        'fhpruares': {'input_1': FilterHighPassRawUserAccelRest},
+
+        # band pass filtered raw userAccel
+        'fbpruaout': {'input_1': FilterBandPassRawUserAccelOutbound},
+        'fbpruaret': {'input_1': FilterBandPassRawUserAccelReturn},
+        'fbpruares': {'input_1': FilterBandPassRawUserAccelRest},
+
+        # low pass filtered raw rotationRate
+        'flprotout': {'input_1': FilterLowPassRawRotationRateOutbound},
+        'flprotret': {'input_1': FilterLowPassRawRotationRateReturn},
+        'flprotres': {'input_1': FilterLowPassRawRotationRateRest},
+
+        # high pass filtered raw rotationRate
+        'fhprotout': {'input_1': FilterHighPassRawRotationRateOutbound},
+        'fhprotret': {'input_1': FilterHighPassRawRotationRateReturn},
+        'fhprotres': {'input_1': FilterHighPassRawRotationRateRest},
+
+        # band pass filtered raw rotationRate
+        'fbprotout': {'input_1': FilterBandPassRawRotationRateOutbound},
+        'fbprotret': {'input_1': FilterBandPassRawRotationRateReturn},
+        'fbprotres': {'input_1': FilterBandPassRawRotationRateRest},
 }
