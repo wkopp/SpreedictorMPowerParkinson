@@ -6,12 +6,19 @@ import pandas as pd
 import numpy as np
 from .cachedwalkingactivity import CachedWalkingActivity as WalkingActivity
 
-from utils import batchRandomRotation
+from .utils import batchRandomRotation
 
 class NumpyDataset(object):
     def __init__(self, modality, variant, reload_ = False):
         self.reload = reload_
         self.load(modality, variant)
+
+    def printStatusUpdate(self, i, cnt):
+        fraction = (i+1)/cnt
+        bar_length = 20
+        num_bars = int(bar_length * fraction)
+
+        print('[{: <{:d}}]'.format('='*num_bars, bar_length) + ' {}/{} {:.2f}%'.format(i+1, cnt, (i+1)/cnt*100), end='\r')
 
     def load(self, modality, variant):
         if not os.path.exists(self.npcachefile) or self.reload:
@@ -21,6 +28,7 @@ class NumpyDataset(object):
             keepind = np.ones((nrows), dtype=bool)
 
             for idx in range(nrows):
+                self.printStatusUpdate(idx, nrows)
                 df = activity.getEntryByIndex(idx, modality, variant)
 
                 if df.empty:

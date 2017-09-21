@@ -4,9 +4,9 @@ import itertools
 import synapseclient
 import pandas as pd
 import numpy as np
-from numpydataset import NumpyDataset
+from .numpydataset import NumpyDataset
 
-from utils import batchRandomRotation
+from .utils import batchRandomRotation
 
 datadir = os.getenv('PARKINSON_DREAM_DATA')
 

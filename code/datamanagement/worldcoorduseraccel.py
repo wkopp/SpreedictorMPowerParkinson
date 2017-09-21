@@ -7,7 +7,7 @@ import numpy as np
 from .numpydataset import NumpyDataset
 import datamanagement.quaternion as quaternion
 
-from utils import batchRandomRotation
+from .utils import batchRandomRotation
 
 datadir = os.getenv('PARKINSON_DREAM_DATA')
 class WorldCoordUserAccel(NumpyDataset):
