@@ -18,7 +18,7 @@ class NumpyDataset(object):
         bar_length = 20
         num_bars = int(bar_length * fraction)
 
-        print('[{: <{:d}}]'.format('='*num_bars, bar_length) + ' {}/{} {:.2f}%'.format(i+1, cnt, (i+1)/cnt*100), end='\r')
+        #print('[{: <{:d}}]'.format('='*num_bars, bar_length) + ' {}/{} {:.2f}%'.format(i+1, cnt, (i+1)/cnt*100), end='\r')
 
     def load(self, modality, variant):
         if not os.path.exists(self.npcachefile) or self.reload:

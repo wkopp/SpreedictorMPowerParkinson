@@ -1,6 +1,6 @@
 import os
 import joblib
-from .walkingactivity import WalkingActivity
+from .walkingactivity_training import WalkingActivityTraining as WalkingActivity
 
 datadir = os.getenv('PARKINSON_DREAM_DATA')
 
@@ -14,7 +14,7 @@ class CachedWalkingActivity(WalkingActivity):
             self.cachepath = os.path.join(self.downloadpath,
                              "json_file_map_{:d}.pkl".format(limit))
         else:
-            self.cachepath = os.path.join(self.downloadpath, 
+            self.cachepath = os.path.join(self.downloadpath,
                             "json_file_map.pkl")
 
         if not os.path.exists(self.downloadpath):
