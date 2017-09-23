@@ -1,4 +1,4 @@
-from keras.layers import Input
+from keras.layers import Input, Dense, Dropout
 from keras.layers.recurrent import LSTM
 from keras.layers.convolutional import Conv1D
 from keras.layers.pooling import GlobalAveragePooling1D
@@ -73,12 +73,41 @@ def model_conv_2l_glob(data, paramdims):
     return input, output
 
 @compatibilityCheck(['input_1'])
+def model_conv_3l_glob(data, paramdims):
+    '''
+    Conv1D:
+        {} x {}, relu
+        {} pooling
+        {} x {}
+        {} pooling
+        {} Dense
+        GlobPool
+    '''
+    input = Input(shape=data['input_1'].shape, name='input_1')
+    layer = Conv1D(paramdims[0], kernel_size=(paramdims[1]),
+            activation = 'relu')(input)
+    layer = BatchNormalization()(layer)
+
+    layer = MaxPooling1D(pool_size=paramdims[2])(layer)
+
+    layer = Conv1D(paramdims[3], kernel_size=(paramdims[4]),
+            activation = 'relu')(layer)
+    layer = BatchNormalization()(layer)
+
+    layer = MaxPooling1D(pool_size=paramdims[5])(layer)
+    layer = Dense(paramdims[6])(layer)
+    layer = Dropout(0.5)(layer)
+
+    output = GlobalAveragePooling1D()(layer)
+    return input, output
+
+@compatibilityCheck(['input_1'])
 def model_gauss_conv_2l_glob(data, paramdims):
     '''
     Conv1D:
         {} x {}, relu
         {} pooling
-        {} x
+        {} x {}
         GlobPool
     '''
     input = Input(shape=data['input_1'].shape, name='input_1')
@@ -160,7 +189,7 @@ def model_logreg(data, paramdims):
     output = Flatten()(input)
 
     return input, output
-	
+
 modeldefs = { 'conv_30_100': (model_conv_glob, (30,100)),
                 'conv_30_200': (model_conv_glob, (30,200)),
                 'conv_30_300': (model_conv_glob, (30,300)),
@@ -169,9 +198,17 @@ modeldefs = { 'conv_30_100': (model_conv_glob, (30,100)),
                 'poolconv_10_50_20': (model_pool_conv_glob, (10,50,20)),
                 'poolconv_10_30_20': (model_pool_conv_glob, (10,30,20)),
                 'poolconv_10_30_30': (model_pool_conv_glob, (10,30,30)),
-                #'conv2l_30_300_10_20_30': (model_conv_2l_glob, (30,300,10,20,30)),
-                #'cgc_30_300_10_20_30': (model_gauss_conv_2l_glob, (30,300,10,20,30)),
+                'conv2l_30_300_10_20_30': (model_conv_2l_glob, (30,300,10,20,30)),
+                'conv2l_50_300_10_20_30': (model_conv_2l_glob, (50,300,10,20,30)),
+                'conv2l_50_300_10_40_30': (model_conv_2l_glob, (50,300,10,40,30)),
+                'conv2l_30_300_10_40_30': (model_conv_2l_glob, (30,300,10,40,30)),
+                'conv3l_50_300_10_20_30_10_10': (model_conv_3l_glob, (50,300,10,20,30, 10,10)),
+                'conv3l_30_300_10_20_30_10_10': (model_conv_3l_glob, (30,300,10,20,30, 10,10)),
+                'conv3l_30_300_10_40_30_10_10': (model_conv_3l_glob, (30,300,10,40,30, 10,10)),
+                'conv3l_50_300_10_40_30_10_10': (model_conv_3l_glob, (50,300,10,40,30, 10,10)),
+                'conv3l_70_300_10_20_30_10_10': (model_conv_3l_glob, (70,300,10,20,30, 10,10)),
+                'conv3l_50_300_10_20_30_10_10': (model_conv_3l_glob, (50,300,10,20,30, 10,10)),
+                'cgc_30_300_10_20_30': (model_gauss_conv_2l_glob, (30,300,10,20,30)),
                 #'convlstm_30_300_10_20': (model_gauss_conv_lstm, (30,300,10,20)),
                 #'ffnn_64' : (model_ff, (64,32)),
-
 }

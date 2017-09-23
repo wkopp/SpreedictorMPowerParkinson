@@ -20,11 +20,9 @@ import sys
 
 outputdir = os.getenv('PARKINSON_DREAM_DATA')
 
-def generate_data(dataset, indices, sample_weights, batchsize, augment = True):
+def generate_fit_data(dataset, indices, sample_weights, batchsize, augment = True):
     while 1:
-        #create a dict
         ib = 0
-#        print("check")
         if len(indices) == 0:
             raise Exception("index list is empty")
         while ib < (len(indices)//batchsize + (1 if len(indices)%batchsize > 0 else 0)):
@@ -44,7 +42,20 @@ def generate_data(dataset, indices, sample_weights, batchsize, augment = True):
                 raise Exception("generator produced empty batch")
             yield Xinput, yinput, sw
 
-#logdir = os.getenv('PARKINSON_LOG_DIR')
+def generate_predict_data(dataset, indices, sample_weights, batchsize, augment = True):
+    while 1:
+        ib = 0
+        if len(indices) == 0:
+            raise Exception("index list is empty")
+        while ib < (len(indices)//batchsize + (1 if len(indices)%batchsize > 0 else 0)):
+            Xinput = {}
+            for ipname in dataset.keys():
+                Xinput[ipname] = dataset[ipname].getData(
+                    indices[ib*batchsize:(ib+1)*batchsize], augment)
+
+            ib += 1
+
+            yield Xinput
 
 class Classifier(object):
     def __init__(self, datadict, model_definition, name, epochs,
@@ -189,12 +200,12 @@ class Classifier(object):
             use_mp = False
 
         history = self.dnn.fit_generator(
-            generate_data(self.data, train_idx, self.sample_weights, bs,
+            generate_fit_data(self.data, train_idx, self.sample_weights, bs,
                     augment),
             steps_per_epoch = len(train_idx)//bs + \
                 (1 if len(train_idx)%bs > 0 else 0),
             epochs = self.epochs,
-            validation_data = generate_data(self.data, val_idx,
+            validation_data = generate_fit_data(self.data, val_idx,
                 self.sample_weights, bs, augment = False),
             validation_steps = len(val_idx)//bs + \
                 (1 if len(val_idx)%bs > 0 else 0),
@@ -232,7 +243,7 @@ class Classifier(object):
             y = yinput[idxs]
 
             rest = 1 if len(idxs)%self.batchsize > 0 else 0
-            scores = self.dnn.predict_generator(generate_data(self.data,
+            scores = self.dnn.predict_generator(generate_predict_data(self.data,
                 idxs, self.sample_weights, self.batchsize, False),
                 steps = len(idxs)//self.batchsize + rest)
 
@@ -255,6 +266,9 @@ class Classifier(object):
         perf.to_csv(os.path.join(summary_path, self.name + ".csv"),
             header = False, index = False, sep = "\t")
         self.logger.info("Results written to {}".format(self.name + ".csv"))
+
+    def featurize(self):
+        pass
 
 if __name__ == "__main__":
 

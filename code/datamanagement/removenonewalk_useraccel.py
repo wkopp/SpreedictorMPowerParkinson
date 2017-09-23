@@ -12,7 +12,7 @@ datadir = os.getenv('PARKINSON_DREAM_DATA')
 class RemoveNoneWalkUserAccel(NumpyDataset):
     def __init__(self, variant, reload_ = False):
         self.npcachefile = os.path.join(datadir,
-                "removednonwalk_devicemotion_{}.pkl".format(variant))
+                "removednonwalk_useraccel_{}.pkl".format(variant))
 
         self.columns = list(itertools.product(["userAcceleration"],
             ["x","y","z"]))
