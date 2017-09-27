@@ -4,6 +4,8 @@ import logging
 import itertools
 import tensorflow as tf
 from keras.backend.tensorflow_backend import set_session
+from keras.callbacks import ReduceLROnPlateau
+
 config = tf.ConfigProto()
 config.gpu_options.per_process_gpu_memory_fraction = 0.3
 config.gpu_options.visible_device_list = "0"
@@ -29,12 +31,12 @@ def generate_fit_data(dataset, indices, sample_weights, batchsize, augment = Tru
             Xinput = {}
             for ipname in dataset.keys():
                 Xinput[ipname] = dataset[ipname].getData(
-                    indices[ib*batchsize:(ib+1)*batchsize], augment)
+                    indices[ib*batchsize:(ib+1)*batchsize], augment).copy()
 
             yinput = dataset['input_1'].labels[
-                    indices[ib*batchsize:(ib+1)*batchsize]]
+                    indices[ib*batchsize:(ib+1)*batchsize]].copy()
 
-            sw = sample_weights[indices[ib*batchsize:(ib+1)*batchsize]]
+            sw = sample_weights[indices[ib*batchsize:(ib+1)*batchsize]].copy()
 
             ib += 1
 
@@ -199,6 +201,9 @@ class Classifier(object):
         else:
             use_mp = False
 
+        reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.2,
+                                      patience=5, min_lr=0.001, verbose=1, cooldown=5)
+
         history = self.dnn.fit_generator(
             generate_fit_data(self.data, train_idx, self.sample_weights, bs,
                     augment),
@@ -209,7 +214,8 @@ class Classifier(object):
                 self.sample_weights, bs, augment = False),
             validation_steps = len(val_idx)//bs + \
                 (1 if len(val_idx)%bs > 0 else 0),
-            use_multiprocessing = use_mp)
+            use_multiprocessing = use_mp,
+            callbacks = [reduce_lr])
 
         self.logger.info("Performance after {} epochs: loss {:1.3f}, val-loss {:1.3f}, acc {:1.3f}, val-acc {:1.3f}".format(self.epochs,
                 history.history["loss"][-1],

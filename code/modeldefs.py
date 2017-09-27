@@ -198,6 +198,7 @@ modeldefs = { 'conv_30_100': (model_conv_glob, (30,100)),
                 'poolconv_10_50_20': (model_pool_conv_glob, (10,50,20)),
                 'poolconv_10_30_20': (model_pool_conv_glob, (10,30,20)),
                 'poolconv_10_30_30': (model_pool_conv_glob, (10,30,30)),
+
                 'conv2l_30_300_10_20_30': (model_conv_2l_glob, (30,300,10,20,30)),
                 'conv2l_50_300_10_20_30': (model_conv_2l_glob, (50,300,10,20,30)),
                 'conv2l_50_300_10_40_30': (model_conv_2l_glob, (50,300,10,40,30)),
@@ -209,6 +210,7 @@ modeldefs = { 'conv_30_100': (model_conv_glob, (30,100)),
                 'conv3l_70_300_10_20_30_10_10': (model_conv_3l_glob, (70,300,10,20,30, 10,10)),
                 'conv3l_50_300_10_20_30_10_10': (model_conv_3l_glob, (50,300,10,20,30, 10,10)),
                 'cgc_30_300_10_20_30': (model_gauss_conv_2l_glob, (30,300,10,20,30)),
+
                 #'convlstm_30_300_10_20': (model_gauss_conv_lstm, (30,300,10,20)),
                 #'ffnn_64' : (model_ff, (64,32)),
 }
