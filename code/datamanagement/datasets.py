@@ -19,6 +19,7 @@ from .filter_bp_rawuseraccel import *
 from .filter_lp_rawrotationrate import *
 from .filter_hp_rawrotationrate import *
 from .filter_bp_rawrotationrate import *
+from datamanagement.filtered_dataset import *
 
 dataset = {
         #Raw userAccel
@@ -113,4 +114,20 @@ dataset = {
         'fbprotout': {'input_1': FilterBandPassRawRotationRateOutbound},
         'fbprotret': {'input_1': FilterBandPassRawRotationRateReturn},
         'fbprotres': {'input_1': FilterBandPassRawRotationRateRest},
+
+        # band pass filtered world coord userAccel
+        'fbpwcuaout': {'input_1': FilterBandPassWorldCoordUserAccelOutbound},
+        'fbpwcuaret': {'input_1': FilterBandPassWorldCoordUserAccelReturn},
+        'fbpwcuares': {'input_1': FilterBandPassWorldCoordUserAccelRest},
+
+        # high pass filtered world coord userAccel
+        'fhpwcuaout': {'input_1': FilterHighPassWorldCoordUserAccelOutbound},
+        'fhpwcuaret': {'input_1': FilterHighPassWorldCoordUserAccelReturn},
+        'fhpwcuares': {'input_1': FilterHighPassWorldCoordUserAccelRest},
+
+        # low pass filtered world coord userAccel
+        'flpwcuaout': {'input_1': FilterLowPassWorldCoordUserAccelOutbound},
+        'flpwcuaret': {'input_1': FilterLowPassWorldCoordUserAccelReturn},
+        'flpwcuares': {'input_1': FilterLowPassWorldCoordUserAccelRest},
+
 }

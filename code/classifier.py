@@ -4,6 +4,8 @@ import logging
 import itertools
 import tensorflow as tf
 from keras.backend.tensorflow_backend import set_session
+from keras.callbacks import ReduceLROnPlateau
+
 config = tf.ConfigProto()
 config.gpu_options.per_process_gpu_memory_fraction = 0.3
 config.gpu_options.visible_device_list = "0"
@@ -29,12 +31,12 @@ def generate_fit_data(dataset, indices, sample_weights, batchsize, augment = Tru
             Xinput = {}
             for ipname in dataset.keys():
                 Xinput[ipname] = dataset[ipname].getData(
-                    indices[ib*batchsize:(ib+1)*batchsize], augment)
+                    indices[ib*batchsize:(ib+1)*batchsize], augment).copy()
 
             yinput = dataset['input_1'].labels[
-                    indices[ib*batchsize:(ib+1)*batchsize]]
+                    indices[ib*batchsize:(ib+1)*batchsize]].copy()
 
-            sw = sample_weights[indices[ib*batchsize:(ib+1)*batchsize]]
+            sw = sample_weights[indices[ib*batchsize:(ib+1)*batchsize]].copy()
 
             ib += 1
 
@@ -96,19 +98,28 @@ class Classifier(object):
 
         # split the dataset by participants
         # first select training and test participants
-        individuals = np.asarray(list(set(hcode)))
+        if sys.version_info[0] < 3:
+            individuals = np.asarray(list(set(hcode)))
+        else:
+            individuals = np.unique(hcode)
 
         test_individuals = np.random.choice(individuals,
                 size=int(test_fraction*len(individuals)),
                 replace=False)
 
-        train_individuals = set(individuals) - set(test_individuals)
+        if sys.version_info[0] < 3:
+            train_individuals = set(individuals) - set(test_individuals)
+        else:
+            train_individuals = np.setdiff1d(individuals, test_individuals)
 
         val_individuals = np.random.choice(np.array(list(train_individuals)),
                 size=int(val_fraction*len(train_individuals)),
                 replace=False)
 
-        train_individuals = train_individuals - set(val_individuals)
+        if sys.version_info[0] < 3:
+            train_individuals = train_individuals - set(val_individuals)
+        else:
+            train_individuals = np.setdiff1d(train_individuals, val_individuals)
 
         # next, obtain the examples for each participant
         def individualStatistics(individ):
@@ -185,6 +196,14 @@ class Classifier(object):
 
         bs = self.batchsize
 
+        if sys.version_info[0] < 3:
+            use_mp = True
+        else:
+            use_mp = False
+
+        reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.2,
+                                      patience=5, min_lr=0.001, verbose=1, cooldown=5)
+
         history = self.dnn.fit_generator(
             generate_fit_data(self.data, train_idx, self.sample_weights, bs,
                     augment),
@@ -195,7 +214,8 @@ class Classifier(object):
                 self.sample_weights, bs, augment = False),
             validation_steps = len(val_idx)//bs + \
                 (1 if len(val_idx)%bs > 0 else 0),
-            use_multiprocessing = True)
+            use_multiprocessing = use_mp,
+            callbacks = [reduce_lr])
 
         self.logger.info("Performance after {} epochs: loss {:1.3f}, val-loss {:1.3f}, acc {:1.3f}, val-acc {:1.3f}".format(self.epochs,
                 history.history["loss"][-1],
