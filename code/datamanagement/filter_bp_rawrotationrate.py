@@ -48,6 +48,8 @@ class FilterBandPassRawRotationRate(NumpyDataset):
 
         return (taps, N)
 
+
+
     def getValues(self, df):
         M = df[[ "_".join(el) for \
             el in self.columns]].values

@@ -28,7 +28,7 @@ class FilterHighPassRawRotationRate(NumpyDataset):
 
         # The desired width of the transition from pass to stop,
         # relative to the Nyquist rate.
-        width = 1.0 / nyq_rate
+        width = 2.0 / nyq_rate
 
         # The desired attenuation in the stop band, in dB.
         ripple_db = 60.0
