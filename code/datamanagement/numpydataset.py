@@ -5,13 +5,16 @@ import synapseclient
 import pandas as pd
 import numpy as np
 from .cachedwalkingactivity import CachedWalkingActivity as WalkingActivity
+from .walkingactivity_training import WalkingActivityTraining
+from .walkingactivity_test import WalkingActivityTest
+from .walkingactivity_suppl import WalkingActivitySuppl
 
 from .utils import batchRandomRotation
 
 class NumpyDataset(object):
-    def __init__(self, modality, variant, reload_ = False):
+    def __init__(self, modality, variant, reload_ = False, training = True):
         self.reload = reload_
-        self.load(modality, variant)
+        self.load(modality, variant, training)
 
     def printStatusUpdate(self, i, cnt):
         fraction = (i+1)/cnt
@@ -20,7 +23,7 @@ class NumpyDataset(object):
 
         #print('[{: <{:d}}]'.format('='*num_bars, bar_length) + ' {}/{} {:.2f}%'.format(i+1, cnt, (i+1)/cnt*100), end='\r')
 
-    def load(self, modality, variant):
+    def loadTraining(self, modality, variant):
         if not os.path.exists(self.npcachefile) or self.reload:
             activity = WalkingActivity()
             nrows = activity.getCommonDescriptor().shape[0]
@@ -50,6 +53,47 @@ class NumpyDataset(object):
             joblib.dump((data, labels, keepind), self.npcachefile)
 
         self.data, self.labels, self.keepind = joblib.load(self.npcachefile)
+
+
+    def loadTest(self, modality, variant):
+        # prepend "test"
+        self.npcachefile = "test_" + self.npcachefile
+        if not os.path.exists(self.npcachefile) or self.reload:
+            activities = [WalkingActivityTraining(),
+                WalkingActivityTest(), WalkingActivitySuppl()]
+            nrows = [activity.getCommonDescriptor().shape[0] for activity in
+                activities]
+
+            data = np.zeros((np.sum(nrows), 2000, len(self.columns)),
+                dtype="float32")
+
+            for act in activities:
+
+            for idx in range(nrows):
+                self.printStatusUpdate(idx, nrows)
+                df = activity.getEntryByIndex(idx, modality, variant)
+
+                if df.empty:
+                    continue
+
+                if df.shape[0]>2000:
+                    df = df.iloc[:2000]
+
+                df =  self.getValues(df)
+                data[idx, :df.shape[0], :] = df
+
+            labels = np.zeros((np.sum(nrows)))
+            keepind = np.ones((np.sum(nrows)), dtype=bool)
+
+            joblib.dump((data, labels, keepind), self.npcachefile)
+
+        self.data, self.labels, self.keepind = joblib.load(self.npcachefile)
+
+    def load(self, modality, variant, training):
+        if training:
+            self.loadTraining(modality, variant)
+        else:
+            self.loadTest(modality, variant)
 
     def getData(self, idx = None, transform = False):
         if type(idx) == type(None):
