@@ -14,6 +14,7 @@ from .svdrotationrate import *
 from .worldcoorduseraccel import *
 from .mtspectrum_svduseraccel import *
 from datamanagement.filtered_dataset import *
+from datamanagement.mtspectrum_fft import *
 
 dataset = {
         #Raw userAccel
@@ -77,7 +78,19 @@ dataset = {
         'wcuares':{'input_1':WorldCoordUserAccelRest},
 
         #MTSpectrum SVD userAccel
-        'mtssvduao' : {'input_1':MtSpectrum_SvdUserAccelOutbound},
+        'mtssvduaout' : {'input_1':MtSpectrum_SvdUserAccelOutbound},
+
+        # MTSpectrum FFT SVD userAccel
+        'mtfsvduaout': {'input_1': MtSpectrum_FFT_SvdUserAccelOutbound},
+
+        # MTSpectrum FFT SVD userAccel
+        'mtfsvdrotout': {'input_1': MtSpectrum_FFT_SvdRotationRateOutbound},
+
+        # MTSpectrum FFT SVD userAccel
+        'mtfruaout': {'input_1': MtSpectrum_FFT_RawUserAccelOutbound},
+
+        # MTSpectrum FFT SVD userAccel
+        'mtfrrotout': {'input_1': MtSpectrum_FFT_RawRotationRateOutbound},
 
         # low pass filtered raw userAccel
         'flpruaout':{'input_1':FilterLowPassRawUserAccelOutbound},

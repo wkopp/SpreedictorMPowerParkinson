@@ -5,3 +5,5 @@
 .Rproj.user
 */[0-9]*/
 *.pkl
+/ldopa/data/download
+.idea
