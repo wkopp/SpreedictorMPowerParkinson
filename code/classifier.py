@@ -44,7 +44,7 @@ def generate_fit_data(dataset, indices, sample_weights, batchsize, augment = Tru
                 raise Exception("generator produced empty batch")
             yield Xinput, yinput, sw
 
-def generate_predict_data(dataset, indices, sample_weights, batchsize, augment = True):
+def generate_predict_data(dataset, indices, batchsize, augment = True):
     while 1:
         ib = 0
         if len(indices) == 0:
@@ -53,7 +53,7 @@ def generate_predict_data(dataset, indices, sample_weights, batchsize, augment =
             Xinput = {}
             for ipname in dataset.keys():
                 Xinput[ipname] = dataset[ipname].getData(
-                    indices[ib*batchsize:(ib+1)*batchsize], augment)
+                    indices[ib*batchsize:(ib+1)*batchsize], augment).copy()
 
             ib += 1
 
@@ -176,6 +176,8 @@ class Classifier(object):
     def defineModel(self):
 
         inputs, outputs = self.modelfct(self.data, self.modelparams)
+        # this will be our feature predictor
+        self.feature_predictor = Model(inputs = inputs, outputs = outputs)
 
         outputs = Dense(1, activation='sigmoid', name="main_output")(outputs)
         model = Model(inputs = inputs, outputs = outputs)
@@ -231,7 +233,7 @@ class Classifier(object):
         self.logger.info("Save model {}".format(filename))
         self.dnn.save(filename)
 
-    def loadModel(self, name):
+    def loadModel(self):
         filename = outputdir + "/models/" + self.name + ".h5"
         self.logger.info("Load model {}".format(filename))
         self.dnn = load_model(filename)
@@ -250,7 +252,7 @@ class Classifier(object):
 
             rest = 1 if len(idxs)%self.batchsize > 0 else 0
             scores = self.dnn.predict_generator(generate_predict_data(self.data,
-                idxs, self.sample_weights, self.batchsize, False),
+                idxs, self.batchsize, False),
                 steps = len(idxs)//self.batchsize + rest)
 
             auc = metrics.roc_auc_score(y, scores)
@@ -274,7 +276,19 @@ class Classifier(object):
         self.logger.info("Results written to {}".format(self.name + ".csv"))
 
     def featurize(self):
-        pass
+
+#        for idxs in range(len(self.data)):
+        idxs = np.arange(len(self.data['input_1']))
+        rest = 1 if len(idxs)%self.batchsize > 0 else 0
+
+        print("idxs ={}, steps = {}".format(idxs, len(idxs)//self.batchsize + rest))
+
+        scores = self.feature_predictor.predict_generator(
+            generate_predict_data(self.data,
+            idxs, self.batchsize, False),
+            steps = len(idxs)//self.batchsize + rest)
+        return scores
+
 
 if __name__ == "__main__":
 
