@@ -9,17 +9,17 @@ from .numpydataset import NumpyDataset
 datadir = os.getenv('PARKINSON_DREAM_DATA')
 
 class RawRotationRate(NumpyDataset):
-    def __init__(self, variant, reload_ = False):
-        self.npcachefile = os.path.join(datadir, 
+    def __init__(self, variant, reload_ = False, training = True):
+        self.npcachefile = os.path.join(datadir,
                 "rawrotationrate_{}.pkl".format(variant))
 
         self.columns = list(itertools.product(["rotationRate"], \
                     ["x","y","z"]))
-        NumpyDataset.__init__(self, "deviceMotion", variant, reload_)
+        NumpyDataset.__init__(self, "deviceMotion", variant, reload_, training)
 
     def getValues(self, df):
         M = df[[ "_".join(el) for \
-            el in self.columns]].values
+            el in self.columns]].values.astype("float32")
         shift = M.mean(axis=0)
         M -= shift
         return M
@@ -28,19 +28,19 @@ class RawRotationRateOutbound(RawRotationRate):
     '''
     Raw rotationRate for outbound walk
     '''
-    def __init__(self, reload_ = False):
-        RawRotationRate.__init__(self, "outbound", reload_)
+    def __init__(self, reload_ = False, training = True):
+        RawRotationRate.__init__(self, "outbound", reload_, training)
 
 class RawRotationRateRest(RawRotationRate):
     '''
     Raw rotationRate for rest phase
     '''
-    def __init__(self, reload_ = False):
-        RawRotationRate.__init__(self, "rest", reload_)
+    def __init__(self, reload_ = False, training = True):
+        RawRotationRate.__init__(self, "rest", reload_, training)
 
 class RawRotationRateReturn(RawRotationRate):
     '''
     Raw rotationRate for return walk
     '''
-    def __init__(self, reload_ = False):
-        RawRotationRate.__init__(self, "return", reload_)
+    def __init__(self, reload_ = False, training = True):
+        RawRotationRate.__init__(self, "return", reload_, training)

@@ -12,13 +12,13 @@ from .utils import batchRandomRotation
 datadir = os.getenv('PARKINSON_DREAM_DATA')
 class WorldCoordNYRNWUserAccel(NumpyDataset):
 
-    def __init__(self, variant, reload_ = False):
+    def __init__(self, variant, reload_ = False, training = True):
         self.npcachefile = os.path.join(datadir,
                 "worldconyrnw_useraccel_{}.pkl".format(variant))
 
         self.columns = list(itertools.product(["userAcceleration"], \
                     ["x","y","z"]))
-        NumpyDataset.__init__(self, "deviceMotion", variant, reload_)
+        NumpyDataset.__init__(self, "deviceMotion", variant, reload_, training)
 
     def getValues(self, df):
         df["score"] = df["userAcceleration_x"]**2 + \
@@ -36,7 +36,7 @@ class WorldCoordNYRNWUserAccel(NumpyDataset):
         df = df[(df.gravity_y>0.6) | (df.gravity_y<-0.6)]
 
         M = df[[ "_".join(el) for \
-            el in self.columns]].values
+            el in self.columns]].values.astype("float32")
         col = list(itertools.product(['attitude'], ["x","y","z", 'w']))
         Q = df[[ "_".join(el) for el in col]].values
 
@@ -53,19 +53,19 @@ class WorldCoordNYRNWUserAccelOutbound(WorldCoordNYRNWUserAccel):
     '''
     WorldCoordNYRNW userAcceleration data for outbound walk
     '''
-    def __init__(self, reload_ = False):
-        WorldCoordNYRNWUserAccel.__init__(self, "outbound", reload_)
+    def __init__(self, reload_ = False, training = True):
+        WorldCoordNYRNWUserAccel.__init__(self, "outbound", reload_, training)
 
 class WorldCoordNYRNWUserAccelRest(WorldCoordNYRNWUserAccel):
     '''
     WorldCoordNYRNW userAcceleration data for rest phase
     '''
-    def __init__(self, reload_ = False):
-        WorldCoordNYRNWUserAccel.__init__(self, "rest", reload_)
+    def __init__(self, reload_ = False, training = True):
+        WorldCoordNYRNWUserAccel.__init__(self, "rest", reload_, training)
 
 class WorldCoordNYRNWUserAccelReturn(WorldCoordNYRNWUserAccel):
     '''
     WorldCoordNYRNW userAcceleration data for return walk
     '''
-    def __init__(self, reload_ = False):
-        WorldCoordNYRNWUserAccel.__init__(self, "return", reload_)
+    def __init__(self, reload_ = False, training = True):
+        WorldCoordNYRNWUserAccel.__init__(self, "return", reload_, training)

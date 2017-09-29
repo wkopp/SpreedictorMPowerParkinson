@@ -9,13 +9,13 @@ from .numpydataset import NumpyDataset
 datadir = os.getenv('PARKINSON_DREAM_DATA')
 
 class RemoveNoneWalkDeviceMotion(NumpyDataset):
-    def __init__(self, variant, reload_ = False):
-        self.npcachefile = os.path.join(datadir, 
+    def __init__(self, variant, reload_ = False, training = True):
+        self.npcachefile = os.path.join(datadir,
                 "removednonwalk_devicemotion_{}.pkl".format(variant))
 
         self.columns = list(itertools.product(["userAcceleration",
             "gravity", "rotationRate"], ["x","y","z"]))
-        NumpyDataset.__init__(self, "deviceMotion", variant, reload_)
+        NumpyDataset.__init__(self, "deviceMotion", variant, reload_, training)
 
     def getValues(self, df):
         # only retain timepoints with y>0.8 or y< -0.8
@@ -32,28 +32,28 @@ class RemoveNoneWalkDeviceMotion(NumpyDataset):
             df = df.iloc[idx[0]:idx[-1]]
 
         M = df[[ "_".join(el) for \
-            el in self.columns]].values
+            el in self.columns]].values.astype("float32")
         shift = M.mean(axis=0)
         M -= shift
         return M
-        
+
 class RemoveNoneWalkDeviceMotionOutbound(RemoveNoneWalkDeviceMotion):
     '''
     Filtered Non-Y up or down device motion data for outbound walk
     '''
-    def __init__(self, reload_ = False):
-        RemoveNoneWalkDeviceMotion.__init__(self, "outbound", reload_)
+    def __init__(self, reload_ = False, training = True):
+        RemoveNoneWalkDeviceMotion.__init__(self, "outbound", reload_, training)
 
 class RemoveNoneWalkDeviceMotionRest(RemoveNoneWalkDeviceMotion):
     '''
     Filtered Non-Y up or down device motion data for rest phase
     '''
-    def __init__(self, reload_ = False):
-        RemoveNoneWalkDeviceMotion.__init__(self, "rest", reload_)
+    def __init__(self, reload_ = False, training = True):
+        RemoveNoneWalkDeviceMotion.__init__(self, "rest", reload_, training)
 
 class RemoveNoneWalkDeviceMotionReturn(RemoveNoneWalkDeviceMotion):
     '''
     Filtered Non-Y up or down device motion data for return walk
     '''
-    def __init__(self, reload_ = False):
-        RemoveNoneWalkDeviceMotion.__init__(self, "return", reload_)
+    def __init__(self, reload_ = False, training = True):
+        RemoveNoneWalkDeviceMotion.__init__(self, "return", reload_, training)

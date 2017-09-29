@@ -19,7 +19,7 @@ def convert(name):
 
 class FilteredData(NumpyDataset):
 
-    def __init__(self, reload_ = False):
+    def __init__(self, reload_ = False, training = True):
 
         res = re.match('Filter(Band|High|Low)Pass(.*?)(UserAccel|RotationRate)(Outbound|Rest|Return)$', self.__class__.__name__)
 
@@ -42,7 +42,7 @@ class FilteredData(NumpyDataset):
         self.columns = list(itertools.product([var_name], \
                     ["x","y","z"]))
 
-        NumpyDataset.__init__(self, "deviceMotion", variant, reload_)
+        NumpyDataset.__init__(self, "deviceMotion", variant, reload_, training)
 
     def createFilterBandPass(self, sample_rate = 100.0):
         # The Nyquist rate of the signal.
@@ -107,7 +107,7 @@ class FilteredData(NumpyDataset):
 
     def getValues(self, df):
         M = df[[ "_".join(el) for \
-            el in self.columns]].values
+            el in self.columns]].values.astype("float32")
 
         if self.data_transform == 'worldcoord':
             #print('worldcoord')
