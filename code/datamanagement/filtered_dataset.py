@@ -186,3 +186,31 @@ class FilterLowPassRawUserAccelReturn(FilteredData):
 
 class FilterLowPassRawUserAccelRest(FilteredData):
     pass
+
+
+class FilterBandPassRawRotationRateOutbound(FilteredData):
+    pass
+
+class FilterBandPassRawRotationRateReturn(FilteredData):
+    pass
+
+class FilterBandPassRawRotationRateRest(FilteredData):
+    pass
+
+class FilterHighPassRawRotationRateOutbound(FilteredData):
+    pass
+
+class FilterHighPassRawRotationRateReturn(FilteredData):
+    pass
+
+class FilterHighPassRawRotationRateRest(FilteredData):
+    pass
+
+class FilterLowPassRawRotationRateOutbound(FilteredData):
+    pass
+
+class FilterLowPassRawRotationRateReturn(FilteredData):
+    pass
+
+class FilterLowPassRawRotationRateRest(FilteredData):
+    pass
