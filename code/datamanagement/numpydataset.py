@@ -5,10 +5,9 @@ import itertools
 import synapseclient
 import pandas as pd
 import numpy as np
-from .cachedwalkingactivity import CachedWalkingActivity as WalkingActivity
-from .walkingactivity_training import WalkingActivityTraining
-from .walkingactivity_test import WalkingActivityTest
-from .walkingactivity_suppl import WalkingActivitySuppl
+from .cachedwalkingactivity_training import CachedWalkingActivityTraining as WalkingActivityTraining
+from .cachedwalkingactivity_test import CachedWalkingActivityTest as WalkingActivityTest
+from .cachedwalkingactivity_suppl import CachedWalkingActivitySuppl as WalkingActivitySuppl
 import progressbar
 
 
@@ -17,11 +16,12 @@ from .utils import batchRandomRotation
 class NumpyDataset(object):
     def __init__(self, modality, variant, reload_ = False, training = True):
         self.reload = reload_
+        self.training = training
         self.load(modality, variant, training)
 
     def loadTraining(self, modality, variant):
         if not os.path.exists(self.npcachefile) or self.reload:
-            activity = WalkingActivity()
+            activity = WalkingActivityTraining()
             nrows = activity.getCommonDescriptor().shape[0]
             data = np.zeros((nrows, 2000, len(self.columns)), dtype="float32")
             keepind = np.ones((nrows), dtype=bool)
@@ -55,37 +55,48 @@ class NumpyDataset(object):
 
     def loadTest(self, modality, variant):
         # prepend "test"
-        self.npcachefile = "test_" + self.npcachefile
+        self.npcachefile = self.npcachefile.split(".")[0]
+        self.npcachefile = self.npcachefile + "_all.pkl"
+        print("process {}".format(self.npcachefile))
+        activities = [WalkingActivityTraining(),
+                        WalkingActivityTest(), WalkingActivitySuppl()]
+
+        recordIds = np.concatenate([a.commondescr.recordId.values for a in activities])
+        self.recordIds = recordIds
+        #    recordIds.append(activities[1].commondescr.recordId, ignore_index=True)
+        #    recordIds.append(activities[2].commondescr.recordId, ignore_index=True)
+
         if not os.path.exists(self.npcachefile) or self.reload:
-            activities = [WalkingActivityTraining(),
-                WalkingActivityTest(), WalkingActivitySuppl()]
+
             nrows = [activity.getCommonDescriptor().shape[0] for activity in
                 activities]
+
 
             data = np.zeros((np.sum(nrows), 2000, len(self.columns)),
                 dtype="float32")
 
+            offset = 0
             for act in activities:
+                print("process activity")
+                bar = progressbar.ProgressBar()
+                for idx in bar(range(act.getCommonDescriptor().shape[0])):
+                    df = act.getEntryByIndex(idx, modality, variant)
 
-            for idx in range(nrows):
-                self.printStatusUpdate(idx, nrows)
-                df = activity.getEntryByIndex(idx, modality, variant)
+                    if df.empty:
+                        continue
 
-                if df.empty:
-                    continue
+                    df =  self.getValues(df)
 
-                if df.shape[0]>2000:
-                    df = df.iloc[:2000]
-
-                df =  self.getValues(df)
-                data[idx, :df.shape[0], :] = df
+                    data[idx + offset, :min(df.shape[0], 2000), :] = df[:min(df.shape[0], 2000), :]
+                offset += act.getCommonDescriptor().shape[0]
 
             labels = np.zeros((np.sum(nrows)))
             keepind = np.ones((np.sum(nrows)), dtype=bool)
 
-            joblib.dump((data, labels, keepind), self.npcachefile)
+            joblib.dump((data, labels, keepind, self.recordIds), self.npcachefile)
 
-        self.data, self.labels, self.keepind = joblib.load(self.npcachefile)
+        self.data, labels, self.keepind, _ = joblib.load(self.npcachefile)
+        self.labels = pd.Series(labels)
 
     def load(self, modality, variant, training):
         if training:
@@ -124,9 +135,16 @@ class NumpyDataset(object):
 
     @property
     def healthCode(self):
-        activity = WalkingActivity()
-        annotation = activity.getCommonDescriptor().iloc[self.keepind]
-        return annotation["healthCode"].values
+        if self.training:
+            activity = WalkingActivityTraining()
+            annotation = activity.getCommonDescriptor().iloc[self.keepind]
+            return annotation["healthCode"].values
+        else:
+            activity = [WalkingActivityTraining(), WalkingActivityTest(), WalkingActivitySuppl()]
+            annotation = np.concatenate([a.getCommonDescriptor()['healthCode'].values for a in activity])
+            return annotation
+
+
 
     @property
     def labels(self):

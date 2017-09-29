@@ -13,13 +13,13 @@ from .utils import batchRandomRotation
 datadir = os.getenv('PARKINSON_DREAM_DATA')
 class FilterBandPassRawUserAccel(NumpyDataset):
 
-    def __init__(self, variant, reload_ = False):
+    def __init__(self, variant, reload_ = False, training = True):
         self.npcachefile = os.path.join(datadir,
                 "filter_bp_rawuseraccel_{}.pkl".format(variant))
 
         self.columns = list(itertools.product(["userAcceleration"], \
                     ["x","y","z"]))
-        NumpyDataset.__init__(self, "deviceMotion", variant, reload_)
+        NumpyDataset.__init__(self, "deviceMotion", variant, reload_, training)
 
     def createFilter(self, sample_rate = 100.0):
         # The Nyquist rate of the signal.
@@ -52,7 +52,7 @@ class FilterBandPassRawUserAccel(NumpyDataset):
 
     def getValues(self, df):
         M = df[[ "_".join(el) for \
-            el in self.columns]].values
+            el in self.columns]].values.astype("float32")
 
         (taps, N) = self.createFilter(sample_rate = 100.0)
 
@@ -68,19 +68,19 @@ class FilterBandPassRawUserAccelOutbound(FilterBandPassRawUserAccel):
     '''
     WorldCoord userAcceleration data for outbound walk
     '''
-    def __init__(self, reload_ = False):
-        FilterBandPassRawUserAccel.__init__(self, "outbound", reload_)
+    def __init__(self, reload_ = False, training = True):
+        FilterBandPassRawUserAccel.__init__(self, "outbound", reload_, training)
 
 class FilterBandPassRawUserAccelRest(FilterBandPassRawUserAccel):
     '''
     WorldCoord userAcceleration data for rest phase
     '''
-    def __init__(self, reload_ = False):
-        FilterBandPassRawUserAccel.__init__(self, "rest", reload_)
+    def __init__(self, reload_ = False, training = True):
+        FilterBandPassRawUserAccel.__init__(self, "rest", reload_, training)
 
 class FilterBandPassRawUserAccelReturn(FilterBandPassRawUserAccel):
     '''
     WorldCoord userAcceleration data for return walk
     '''
-    def __init__(self, reload_ = False):
-        FilterBandPassRawUserAccel.__init__(self, "return", reload_)
+    def __init__(self, reload_ = False, training = True):
+        FilterBandPassRawUserAccel.__init__(self, "return", reload_, training)

@@ -13,13 +13,14 @@ from .utils import batchRandomRotation
 datadir = os.getenv('PARKINSON_DREAM_DATA')
 class FilterBandPassRawRotationRate(NumpyDataset):
 
-    def __init__(self, variant, reload_ = False):
+    def __init__(self, variant, reload_ = False, training = True):
         self.npcachefile = os.path.join(datadir,
                 "filter_bp_rawrotationrate_{}.pkl".format(variant))
 
         self.columns = list(itertools.product(["rotationRate"], \
                                               ["x", "y", "z"]))
-        NumpyDataset.__init__(self, "deviceMotion", variant, reload_)
+        NumpyDataset.__init__(self, "deviceMotion", variant, reload_,
+                training = True)
 
     def createFilter(self, sample_rate = 100.0):
         # The Nyquist rate of the signal.
@@ -52,7 +53,7 @@ class FilterBandPassRawRotationRate(NumpyDataset):
 
     def getValues(self, df):
         M = df[[ "_".join(el) for \
-            el in self.columns]].values
+            el in self.columns]].values.astype("float32")
 
         shift = M.mean(axis=0)
         M -= shift
@@ -71,19 +72,19 @@ class FilterBandPassRawRotationRateOutbound(FilterBandPassRawRotationRate):
     '''
     WorldCoord userAcceleration data for outbound walk
     '''
-    def __init__(self, reload_ = False):
-        FilterBandPassRawRotationRate.__init__(self, "outbound", reload_)
+    def __init__(self, reload_ = False, training = True):
+        FilterBandPassRawRotationRate.__init__(self, "outbound", reload_, training = True)
 
 class FilterBandPassRawRotationRateRest(FilterBandPassRawRotationRate):
     '''
     WorldCoord userAcceleration data for rest phase
     '''
-    def __init__(self, reload_ = False):
-        FilterBandPassRawRotationRate.__init__(self, "rest", reload_)
+    def __init__(self, reload_ = False, training = True):
+        FilterBandPassRawRotationRate.__init__(self, "rest", reload_, training = True)
 
 class FilterBandPassRawRotationRateReturn(FilterBandPassRawRotationRate):
     '''
     WorldCoord userAcceleration data for return walk
     '''
-    def __init__(self, reload_ = False):
-        FilterBandPassRawRotationRate.__init__(self, "return", reload_)
+    def __init__(self, reload_ = False, training = True):
+        FilterBandPassRawRotationRate.__init__(self, "return", reload_, training = True)
