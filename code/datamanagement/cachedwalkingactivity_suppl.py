@@ -1,10 +1,10 @@
 import os
 import joblib
-from .walkingactivity_training import WalkingActivityTraining as WalkingActivity
+from .walkingactivity_suppl import WalkingActivitySuppl as WalkingActivity
 
 datadir = os.getenv('PARKINSON_DREAM_DATA')
 
-class CachedWalkingActivityTraining(WalkingActivity):
+class CachedWalkingActivitySuppl(WalkingActivity):
 
     def __init__(self, limit = None, download_jsons = True, reload_ = False):
 
@@ -12,10 +12,10 @@ class CachedWalkingActivityTraining(WalkingActivity):
 
         if limit:
             self.cachepath = os.path.join(self.downloadpath,
-                             "json_file_map_{:d}.pkl".format(limit))
+                             "json_file_map_{:d}_suppl.pkl".format(limit))
         else:
             self.cachepath = os.path.join(self.downloadpath,
-                            "json_file_map.pkl")
+                            "json_file_map_suppl.pkl")
 
         if not os.path.exists(self.downloadpath):
             os.mkdir(self.downloadpath)
@@ -31,7 +31,7 @@ class CachedWalkingActivityTraining(WalkingActivity):
         self.commondescr, self.file_map = joblib.load(self.cachepath)
 
 if __name__ == '__main__':
-    wa = CachedWalkingActivityTraining(limit = 100, download_jsons = True)
+    wa = CachedWalkingActivitySuppl(limit = 100, download_jsons = True)
     #ts = wa.getEntryByIndex(0, modality='pedometer', variant='outbound')
     #wa.convertUserAccelerationToWorldFrame(ts)
     #print wa.modality_variants
