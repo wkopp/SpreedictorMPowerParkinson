@@ -30,6 +30,8 @@ parser.add_argument('--flip', dest="flip", action='store_true',
         default=False, help = "Augment by flipping the sign")
 parser.add_argument('--rofl', dest="rofl", action='store_true',
         default=False, help = "Augment by flipping the sign and rotating")
+parser.add_argument('--dry', dest="dry", action='store_true',
+        default=False, help = "Only lists the combinations to be computed, but does not actually compute them.")
 
 args = parser.parse_args()
 print(args.datafilter)
@@ -51,6 +53,9 @@ for comb in all_combinations:
     #name = '.'.join([args.data, args.model])
 
     print("Running {}-{}".format(comb[0],comb[1]))
+    if args.dry:
+        continue
+
     name = '.'.join(comb)
     #continue
     print("--noise {}".format(args.noise))

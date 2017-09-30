@@ -2,7 +2,7 @@ import itertools
 import synapseclient
 import pandas as pd
 import numpy as np
-from .walkingactivity import WalkingActivity
+from .walkingactivity_training import WalkingActivityTraining as WalkingActivity
 
 class PedoWalk(WalkingActivity):
     def __init__(self, limit = None):

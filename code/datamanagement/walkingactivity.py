@@ -17,8 +17,6 @@ class WalkingActivity(object):
 
     def __init__(self, limit = None, download_jsons = True):
 
-        self.synapselocation = 'syn10146553'
-
         self.download(limit, download_jsons)
 
     def getCommonDescriptor(self):
@@ -49,20 +47,22 @@ class WalkingActivity(object):
 
         df[["createdOn"]] = df[["createdOn"]].apply(lambda x: pd.to_datetime(x, unit='ms'))
         df.fillna(value=-1, inplace=True)
-        df[df.columns[5:-1]] = df[df.columns[5:-1]].astype("int64")
+        #df[df.columns[5:-1]] = df[df.columns[5:-1]].astype("int64")
+        df[self.keepcolumns] = df[self.keepcolumns].astype("int64")
+
+        self.commondescr = df
 
         filemap = {}
 
         if download_jsons:
-            for col in df.columns[5:-1]:
+            for col in self.keepcolumns:
                 print("Downloading {}".format(col))
                 json_files = syn.downloadTableColumns(results, col)
                 filemap.update(json_files)
 
-        dem = Demographics().getData()[["healthCode", "professional-diagnosis"]]
+        #dem = Demographics().getData()[["healthCode", "professional-diagnosis"]]
 
-        df = pd.merge(df, dem, on = "healthCode")
-        self.commondescr = df
+        #df = pd.merge(df, dem, on = "healthCode")
         self.file_map = filemap
 
         syn.logout()
