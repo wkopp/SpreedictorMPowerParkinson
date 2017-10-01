@@ -4,6 +4,7 @@ from modeldefs import modeldefs
 from datamanagement.datasets import dataset
 import itertools
 from classifier import Classifier
+from merge_classifier import MergeClassifier
 import numpy as np
 import pandas as pd
 
@@ -69,22 +70,56 @@ class Featurizer(object):
 
         pdfeatures.to_csv(os.path.join(self.summary_path, "submission_v1.csv"),
                 sep = ",")
-        print("Submission file written to {}".format(self.name + "_v1.csv"))
+        print("Submission file written to {}".format("submission_v1.csv"))
 
-    def submitV1(self):
+    def generateSubmissionFileV2(self):
+            # determine
+            print("Generate submission_v2")
+
+
+            all_combinations = {'alldata.integration1':[('svdrotout', 'conv2l_30_300_10_40_30_rofl'),
+                    ('flprotres','conv2l_30_300_10_40_30_rofl'),
+                    ('rrotret','conv2l_30_300_10_20_30_rofl'),
+                    ('fhpwcuaout','conv3l_50_300_10_20_30_10_10_rofl'),
+                    ('fbpwcuares','conv2l_50_300_10_40_30_rofl'),
+                    ('fhpwcuaret','conv2l_30_300_10_40_30_rofl')] }
+
+            # extract recordids
+            da = dataset[all_combinations['alldata.integration1'][0][0]]['input_1'](training=False)
+            recordids = da.recordIds
+            del da
+
+
+            model = MergeClassifier(all_combinations["alldata.integration1"],
+                name="alldata.integration1", epochs = 1, training = False)
+
+            model.loadModel()
+            features = model.featurize()
+
+            print("Feature Dimension: {}".format(features.shape))
+            pdfeatures = pd.DataFrame(data = features,
+                index = pd.Index(data=recordids, name="recordId"),
+                columns= list(['{}{}'.format(x,y) for x,y in
+                        itertools.product(['Feature'], range(features.shape[1]))]))
+
+            pdfeatures.to_csv(os.path.join(self.summary_path, "submission_v2.csv"),
+                    sep = ",")
+            print("Submission file written to {}".format("submission_v2.csv"))
+
+    def submit(self, name):
         folderid = 'syn10932057'
         import synapseclient
         from synapseclient import File, Evaluation
         syn = synapseclient.login()
 
         # upload the file to the synapse project folder
-        submissionfile = File(os.path.join(self.summary_path, "submission_v1.csv"),
+        submissionfile = File(os.path.join(self.summary_path, name + ".csv"),
             parent = folderid)
         submissionfile = syn.store(submissionfile)
 
         team_entity = syn.getTeam("Spreedictors")
         submission = syn.submit(evaluation = 9606375,
-            entity = submissionfile, name = "Spreedictor_submission_v1",
+            entity = submissionfile, name = "Spreedictor_{}".format(name),
             team = team_entity)
 
         syn.logout()
@@ -92,4 +127,6 @@ class Featurizer(object):
 if __name__ == "__main__":
     fe = Featurizer()
     #fe.generateSubmissionFileV1()
-    fe.submitV1()
+    #fe.submit("submission_v1")
+    #fe.generateSubmissionFileV2()
+    fe.submit("submission_v2")
