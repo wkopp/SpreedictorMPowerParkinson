@@ -14,9 +14,10 @@ import progressbar
 from .utils import batchRandomRotation
 
 class NumpyDataset(object):
-    def __init__(self, modality, variant, reload_ = False, training = True):
+    def __init__(self, modality, variant, reload_ = False, training = True, rmnan=True):
         self.reload = reload_
         self.training = training
+        self.rmnan = rmnan
         self.load(modality, variant, training)
 
     def loadTraining(self, modality, variant):
@@ -46,11 +47,27 @@ class NumpyDataset(object):
 
             labels = activity.getCommonDescriptor()["professional-diagnosis"].apply(
                 lambda x: 1 if x==True else 0)
+
             labels = labels[keepind]
 
             joblib.dump((data, labels, keepind), self.npcachefile)
 
         self.data, self.labels, self.keepind = joblib.load(self.npcachefile)
+
+        # this is kind of a hack, because most cache files have
+        # the missing values already removed.
+        # so here we re-instantiate the full dataset that contains the zeros
+        if self.rmnan == False:
+            activity = WalkingActivityTraining()
+            nrows = activity.getCommonDescriptor().shape[0]
+            data = np.zeros((nrows, 2000, len(self.columns)), dtype="float32")
+            data[self.keepind] = self.data
+            self.data = data
+
+            # also reload the labels
+            labels = activity.getCommonDescriptor()["professional-diagnosis"].apply(
+                lambda x: 1 if x==True else 0)
+            self.labels = labels
 
 
     def loadTest(self, modality, variant):
@@ -137,7 +154,10 @@ class NumpyDataset(object):
     def healthCode(self):
         if self.training:
             activity = WalkingActivityTraining()
-            annotation = activity.getCommonDescriptor().iloc[self.keepind]
+            if self.rmnan:
+                annotation = activity.getCommonDescriptor().iloc[self.keepind]
+            else:
+                annotation = activity.getCommonDescriptor()
             return annotation["healthCode"].values
         else:
             activity = [WalkingActivityTraining(), WalkingActivityTest(), WalkingActivitySuppl()]
