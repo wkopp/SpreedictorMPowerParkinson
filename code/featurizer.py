@@ -125,8 +125,29 @@ class Featurizer(object):
         syn.logout()
 
 if __name__ == "__main__":
+    import argparse
+    from argparse import RawTextHelpFormatter
+
+    parser = argparse.ArgumentParser(description = \
+            'Featurize the dataset and submit to challenge board', formatter_class = \
+            RawTextHelpFormatter)
+    parser.add_argument('--genfeat1', dest="feat1",
+            default=False, action='store_true', help = "Generate features for first submission.")
+    parser.add_argument('--genfeat2', dest="feat2",
+            default=False, action='store_true', help = "Generate features for second submission.")
+    parser.add_argument('--submit1', dest="submit1",
+            default=False, action='store_true', help = "Submit first feature set.")
+    parser.add_argument('--submit2', dest="submit2",
+            default=False, action='store_true', help = "Submit second feature set.")
+
+
+    args = parser.parse_args()
     fe = Featurizer()
-    fe.generateSubmissionFileV1()
-    #fe.submit("submission_v1")
-    fe.generateSubmissionFileV2()
-    #fe.submit("submission_v2")
+    if args.feat1:
+        fe.generateSubmissionFileV1()
+    if args.feat2:
+        fe.generateSubmissionFileV2()
+    if args.submit1:
+        fe.submit("submission_v1")
+    if args.submit2:
+        fe.submit("submission_v2")
