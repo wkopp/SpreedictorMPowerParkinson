@@ -1,4 +1,4 @@
-# ParkinsonDream
+# mPower feature extraction for Parkinson's disease DREAM challenge
 ## Requirements
 To run the scripts you need the following software requirements:
 1. Install [Anaconda2-4.4.0](https://www.continuum.io/downloads). This will install Python 2.7 
