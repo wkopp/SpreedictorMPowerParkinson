@@ -126,7 +126,7 @@ class Featurizer(object):
 
 if __name__ == "__main__":
     fe = Featurizer()
-    #fe.generateSubmissionFileV1()
+    fe.generateSubmissionFileV1()
     #fe.submit("submission_v1")
-    #fe.generateSubmissionFileV2()
-    fe.submit("submission_v2")
+    fe.generateSubmissionFileV2()
+    #fe.submit("submission_v2")
