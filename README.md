@@ -52,8 +52,7 @@ python merge_classifier.py alldata.integration1
 
 ## Feature prediction
 
-Finally, the feature predictions and submissions to the challenge score board
-were conducted using
+Finally, the feature predictions were generated using
 ```
 python featurizer.py --genfeat1 --genfeat2
 ```
