@@ -1,6 +1,7 @@
 # mPower feature extraction for Parkinson's disease DREAM challenge
 This repository contains code for automatically extracting features that
-are predictive of Parkinson's disease using deep learning. 
+are predictive of Parkinson's disease using deep learning.
+We validated our method in the [Parkinson's disease digital biomarker DREAM challenge](https://www.synapse.org/#!Synapse:syn8717496/wiki/).
 For a summary of our approach please can be found [here](https://www.synapse.org/#!Synapse:syn10911551/wiki/470623).
 ## Requirements
 To run the scripts you need the following software requirements:
