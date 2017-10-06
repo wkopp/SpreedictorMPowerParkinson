@@ -1,4 +1,6 @@
 # ParkinsonDream
+[![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
+
 ## Requirements
 To run the scripts you need the following software requirements:
 1. Install [Anaconda2-4.4.0](https://www.continuum.io/downloads). This will install Python 2.7 
