@@ -7,15 +7,10 @@ We validated our method in the [Parkinson's disease digital biomarker DREAM chal
 For a summary of our approach please can be found [here](https://www.synapse.org/#!Synapse:syn10911551/wiki/470623).
 ## Requirements
 To run the scripts you need the following software requirements:
-1. Install [Anaconda2-4.4.0](https://www.continuum.io/downloads). This will install Python 2.7 
-and several necessary packages, including numpy and pandas.
-2. `conda install -c bioconda synapseclient`
-3. `conda install -c anaconda joblib`
-4. `conda install -c conda-forge keras`
-5. `conda install -c conda-forge tensorflow`
+1. Install [Anaconda2-4.4.0](https://www.continuum.io/downloads). 
 
-We recommend to install tensorflow with GPU utilization to speed up the training and 
-model evaluation (see TensorFlow website).
+Subsequently, the necessary requirements can be installed using
+ `conda create --name <env> --file requirements.txt`
 
 ## Environment variables
 You need to set the environment variable `PARKINSON_DREAM_DATA` to point to
